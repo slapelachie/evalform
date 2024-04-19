@@ -13,7 +13,7 @@ class DashboardController extends BaseController
         // TODO: Need to redirect to login if not logged in
 
         // TODO: Get user info
-        $user_id = 5;
+        $user_id = 1;
         $user_data = $userModel->find($user_id);
 
         // TODO: Add logic between business and personal

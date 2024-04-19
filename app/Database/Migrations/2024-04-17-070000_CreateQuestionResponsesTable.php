@@ -15,6 +15,11 @@ class CreateQuestionResponsesTable extends Migration
                 'unsigned' => true,
                 'auto_increment' => true,
             ],
+            'survey_response_id' => [
+                'type' => 'INT',
+                'constraint' => 11,
+                'unsigned' => true,
+            ],
             'question_id' => [
                 'type' => 'INT',
                 'constraint' => 11,
@@ -34,6 +39,7 @@ class CreateQuestionResponsesTable extends Migration
 
         $this->forge->addkey('id', true);
 
+        $this->forge->addForeignKey('survey_response_id', 'survey_responses', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('question_id', 'questions', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('answer_id', 'question_answer_choices', 'id', 'CASCADE', 'CASCADE');
 
