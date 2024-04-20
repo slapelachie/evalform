@@ -25,41 +25,9 @@
                     <?php } ?>
                 </div>
             <?php endforeach; ?>
-            <button type="button" class="btn btn-primary" onclick="submitAnswers()">Submit</button>
+            <input type="submit" class="btn btn-primary">Submit</input>
         </form>
     </div>
 </section>
-
-<script>
-    function submitAnswers() {
-        const form = document.getElementById('questionForm');
-        const formData = new FormData(form);
-        let answers = [];
-
-        for (let [key, value] of formData.entries()) {
-            answers.push({
-                question_id: key,
-                value: value
-            });
-        }
-
-        // Convert the answers array to JSON format
-        const jsonPayload = JSON.stringify(answers);
-
-        // Send data
-        fetch(window.location.href, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: jsonPayload
-        })
-        .then(response => {
-            console.log(response.json());
-        })
-        .then(data => console.log(data))
-        .then(error => console.error(error));
-    }
-</script>
 
 <?= $this->endSection() ?>

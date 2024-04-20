@@ -59,19 +59,11 @@ class SurveyController extends BaseController
         $questionResponsesModel->insert($question_response_payload);
     }
 
-    private function processQuestionResponses($question_responses, $survey_response_id)
+    private function processQuestionResponses($post_data, $survey_response_id)
     {
         // Process each survey question response
-        foreach ($question_responses as $question_response) {
-            if (!isset($question_response['question_id'], $question_response['value'])) {
-                $this->handleSurveyResponseError(400, 'Missing question ID or value in one or more responses.');
-                return false;
-            }
-
-            $question_id = $question_response['question_id'];
-            $answer = $question_response['value'];
-
-            return $this->insertQuestionResponse($question_id, $survey_response_id, $answer);
+        foreach ($post_data as $question_id => $answer) {
+            $this->insertQuestionResponse($question_id, $survey_response_id, $answer);
         }
 
         return true;
@@ -79,12 +71,11 @@ class SurveyController extends BaseController
 
     public function surveySubmit($survey_id)
     {
-        // Convert json into an array
-        $question_response_data = $this->request->getJSON(true);
+        $post_data = $this->request->getPost();
 
-        // Check if json is valid
-        if (empty($question_response_data)) {
-            return $this->handleSurveyResponseError(400, 'Invalid JSON data: ' . json_last_error_msg());
+        // Check if post data is valid
+        if (empty($post_data)) {
+            return $this->handleSurveyResponseError(400, 'Invalid post data!');
         }
 
         // Start a transaction
@@ -93,7 +84,7 @@ class SurveyController extends BaseController
         // Create survey response
         $survey_response_id = $this->createSurveyResponse($survey_id);
 
-        if (!$this->processQuestionResponses($question_response_data, $survey_response_id)) {
+        if (!$this->processQuestionResponses($post_data, $survey_response_id)) {
             // Error handling is done within the function
             db_connect()->transRollback();
             return;
@@ -103,10 +94,11 @@ class SurveyController extends BaseController
         if (db_connect()->transStatus() === false) {
             db_connect()->transRollback();
             return $this->handleSurveyResponseError(500, "Error processing your request");
-        } else {
-            db_connect()->transCommit();
-            return $this->response->setStatusCode(201)->setJSON(['message' => 'Survey response submitted sucessfully']);
         }
+
+        db_connect()->transCommit();
+        // return $this->response->setStatusCode(201)->setJSON(['message' => 'Survey response submitted sucessfully']);
+        return view('survey_complete');
     }
 
     public function manage($survey_id)
