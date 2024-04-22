@@ -1,31 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use CodeIgniter\Model;
+use CodeIgniter\Shield\Models\UserModel as ShieldUserModel;
 
-class UsersModel extends Model
+class UsersModel extends ShieldUserModel
 {
-    protected $table            = 'users';
-    protected $primaryKey       = 'id';
-    protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
-    protected $allowedFields    = ['username', 'is_admin', 'business_id', 'first_name', 'last_name'];
+    protected function initialize(): void
+    {
+        parent::initialize();
 
-    protected $useTimestamps = false;
+        $this->allowedFields = [
+            ...$this->allowedFields,
+            'business_id',
+        ];
 
-    protected $validationRules = [
-        'username' => 'required|string|is_unique|max_length[64]',
-        'is_admin' => 'permit_empty|in_list[0,1]',
-        'business_id' => 'permit_empty|integer',
-        'first_name' => 'required|string|max_length[64]',
-        'last_name' => 'permit_empty|string|max_length[64]',
-    ];
-
-    protected $validationMessages = [
-        'username' => [
-            'is_unique' => 'Sorry. This username has already been taken. Please choose a new username.',
-            'max_length' => 'Sorry. This username is too long. Consider choosing a shorter username.',
-        ],
-    ];
+        $this->validationRules = [
+            ...$this->validationRules,
+            'business_id' => 'permit_empty|integer',
+        ];
+    }
 }
