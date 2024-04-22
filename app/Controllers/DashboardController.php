@@ -9,6 +9,7 @@ class DashboardController extends BaseController
         $userModel = new \App\Models\UsersModel();
         $businessModel = new \App\Models\BusinessesModel();
         $surveyModel = new \App\Models\SurveysModel();
+        $surveyResponsesModel = new \App\Models\SurveyResponsesModel();
 
         // TODO: Need to redirect to login if not logged in
 
@@ -30,6 +31,7 @@ class DashboardController extends BaseController
         // TODO: Get insights
         $publish_count = 0;
         $draft_count = 0;
+        $survey_response_count = 0;
 
         foreach ($data['surveys'] as $survey) {
             if($survey['status'] == 'published') {
@@ -37,6 +39,8 @@ class DashboardController extends BaseController
             } else {
                 $draft_count++;
             }
+
+            $survey_response_count += count($surveyResponsesModel->where('survey_id', $survey['id'])->findAll());
         }
 
         $data['insights'] = [
@@ -53,8 +57,8 @@ class DashboardController extends BaseController
                 'value' => 0,
             ],
             'answers' => [
-                'name' => 'Survey Answers',
-                'value' => 0,
+                'name' => 'Survey Responses',
+                'value' => $survey_response_count,
             ],
         ];
 

@@ -40,7 +40,7 @@
             </div>
         </div>
         <div class="container mb-3">
-            <div id="accordionQuestions" class="accordion">
+            <div id="accordionQuestions" class="accordion mb-3">
                 <?php foreach ($questions as $question) : ?>
                     <div class="accordion-item">
                         <h2 id="questionHeader<?= $question['question_number'] ?>" class="accordion-header">
@@ -60,12 +60,12 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach($question['choices'] as $choice): ?>
-                                            <tr>
-                                                <td><?= $choice['answer'] ?></td>
-                                                <td>0</td>
-                                                <td class=""><i class="bi bi-dash"></i> 0%</td>
-                                            </tr>
+                                            <?php foreach ($question['choices'] as $choice) : ?>
+                                                <tr>
+                                                    <td><?= $choice['answer'] ?></td>
+                                                    <td><?= $responses[$choice['id']]['count'] ?></td>
+                                                    <td class=""><i class="bi bi-dash"></i> <?= $responses[$choice['id']]['percent'] ?>%</td>
+                                                </tr>
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
@@ -93,6 +93,9 @@
                         </div>
                     </div>
                 <?php endforeach; ?>
+            </div>
+            <div class="mb-3 d-grid">
+                <button id="publish_survey" type="button" class="btn btn-primary">Publish Survey</button>
             </div>
         </div>
     </div>
