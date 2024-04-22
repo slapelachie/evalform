@@ -13,3 +13,6 @@ $routes->get('survey/manage/(:num)', 'SurveyController::manage/$1');
 $routes->get('survey/edit/(:num)', 'SurveyController::edit/$1');
 
 $routes->post('survey/(:num)', 'SurveyController::surveySubmit/$1');
+
+/* Testing Route */
+$routes->get('test/(:num)', 'TestController::index/$1');

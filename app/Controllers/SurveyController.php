@@ -71,7 +71,11 @@ class SurveyController extends BaseController
 
     public function surveySubmit($survey_id)
     {
+        $surveysModel = new \App\Models\SurveysModel();
+
         $post_data = $this->request->getPost();
+
+        // TODO: Check if survey actually exists
 
         // Check if post data is valid
         if (empty($post_data)) {
@@ -93,12 +97,14 @@ class SurveyController extends BaseController
         // Check if any errors occured, rollback if it has
         if (db_connect()->transStatus() === false) {
             db_connect()->transRollback();
+            // TODO: display end of survey page error
             return $this->handleSurveyResponseError(500, "Error processing your request");
         }
 
         db_connect()->transCommit();
-        // return $this->response->setStatusCode(201)->setJSON(['message' => 'Survey response submitted sucessfully']);
-        return view('survey_complete');
+
+        $data['survey'] = $surveysModel->find($survey_id);
+        return view('survey_complete', $data);
     }
 
     public function manage($survey_id)

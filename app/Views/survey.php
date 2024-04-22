@@ -25,7 +25,7 @@
                     <?php } ?>
                 </div>
             <?php endforeach; ?>
-            <input type="submit" class="btn btn-primary">Submit</input>
+            <input type="submit" class="btn btn-primary" value="Submit">
         </form>
     </div>
 </section>
