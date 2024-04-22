@@ -17,8 +17,8 @@ class SurveysModel extends Model
     protected $validationRules = [
         'name' => 'required|string|max_length[256]',
         'description' => 'required|string',
-        'owner_id' => 'required|int',
-        'business_id' => 'permit_empty|int',
+        'owner_id' => 'required|integer',
+        'business_id' => 'permit_empty|integer',
         'status' => 'required|string|in_list[draft,published]'
     ];
 

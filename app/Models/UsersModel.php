@@ -10,13 +10,14 @@ class UsersModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $allowedFields    = ['username', 'business_id', 'first_name', 'last_name'];
+    protected $allowedFields    = ['username', 'is_admin', 'business_id', 'first_name', 'last_name'];
 
     protected $useTimestamps = false;
 
     protected $validationRules = [
         'username' => 'required|string|is_unique|max_length[64]',
-        'business_id' => 'permit_empty|int',
+        'is_admin' => 'permit_empty|in_list[0,1]',
+        'business_id' => 'permit_empty|integer',
         'first_name' => 'required|string|max_length[64]',
         'last_name' => 'permit_empty|string|max_length[64]',
     ];

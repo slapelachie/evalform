@@ -94,9 +94,11 @@
                     </div>
                 <?php endforeach; ?>
             </div>
-            <div class="mb-3 d-grid">
-                <button id="publish_survey" type="button" class="btn btn-primary">Publish Survey</button>
-            </div>
+            <?php if ($survey['status'] == 'draft') : ?>
+                <div class="mb-3 d-grid">
+                    <button id="publish_survey" type="button" class="btn btn-primary">Publish Survey</button>
+                </div>
+            <?php endif ?>
         </div>
     </div>
 </section>

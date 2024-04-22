@@ -16,3 +16,6 @@ $routes->post('survey/(:num)', 'SurveyController::surveySubmit/$1');
 
 /* Testing Route */
 $routes->get('test/(:num)', 'TestController::index/$1');
+
+/* API Routes */
+$routes->resource('api/survey', ['controller' => 'API\SurveyController']);

@@ -20,6 +20,12 @@ class CreateUsersTable extends Migration
                 'constraint' => 63,
                 'null' => false,
             ],
+            'is_admin' => [
+                'type' => 'int',
+                'constraint' => 1,
+                'null' => false,
+                'default' => 0,
+            ],
             'business_id' => [
                 'type' => 'int',
                 'constraint' => 11,
