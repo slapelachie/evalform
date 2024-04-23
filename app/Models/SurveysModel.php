@@ -19,7 +19,7 @@ class SurveysModel extends Model
         'description' => 'required|string',
         'owner_id' => 'required|integer',
         'business_id' => 'permit_empty|integer',
-        'status' => 'required|string|in_list[draft,published]'
+        'status' => 'permit_empty|string|in_list[draft,published]'
     ];
 
     protected $validationMessages = [

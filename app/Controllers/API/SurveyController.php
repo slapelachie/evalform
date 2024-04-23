@@ -28,6 +28,7 @@ class SurveyController extends ResourceController
     public function create()
     {
         $data = $this->request->getJSON(true);
+        log_message('debug', 'create function called');
 
         if (!$this->model->insert($data)) {
             return $this->fail($this->model->errors());
@@ -52,8 +53,7 @@ class SurveyController extends ResourceController
             $updated_survey = $this->model->find($id);
             return $this->respondUpdated($updated_survey);
         }
-            return $this->failServerError('Could not update the survey');
-    
+        return $this->failServerError('Could not update the survey');
     }
 
     public function delete($id = null)
@@ -66,7 +66,6 @@ class SurveyController extends ResourceController
         if ($this->model->delete($id)) {
             return $this->respondDeleted($survey);
         }
-            return $this->failServerError('Could not delete the survey');
-        
+        return $this->failServerError('Could not delete the survey');
     }
 }

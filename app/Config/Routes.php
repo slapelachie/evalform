@@ -9,6 +9,7 @@ $routes->get('/', 'DashboardController::index');
 
 /* Survey Routes */
 $routes->get('surveys/create', 'SurveyController::create');
+$routes->post('surveys/create', 'SurveyController::createSubmit');
 
 $routes->get('surveys/(:num)', 'SurveyController::index/$1');
 $routes->get('surveys/(:num)/manage', 'SurveyController::manage/$1');
@@ -24,3 +25,4 @@ service('auth')->routes($routes);
 
 /* API Routes */
 $routes->resource('api/surveys', ['controller' => 'API\SurveyController']);
+$routes->resource('api/questions', ['controller' => 'API\QuestionsController']);

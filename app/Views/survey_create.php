@@ -9,7 +9,7 @@
                 <label for="surveyTitle">
                     <h5>Title of Survey</h5>
                 </label>
-                <input id="surveyTitle" type="text" class="form-control">
+                <input id="surveyTitle" name="survey-title" type="text" class="form-control">
             </div>
             <div id="questionsContainer">
 
@@ -52,7 +52,8 @@
                     </label>
                     <button type="button" class="delete-question-button btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
                 </div>
-                <input id="questionTitle" type="text" class="form-control">
+                <input type="text" class="question-title form-control">
+                <input type="hidden" value="multiple-choice" class="question-type">
             </div>
             <div>
                 <label for="answers">
@@ -65,13 +66,12 @@
                 </div>
             </div>
         </div>
-        <input type="hidden" name="question-number" class="question-number">
     </div>
 </template>
 
 <template id="answerTemplate">
     <div class="answer-container input-group mb-2">
-        <input type="text" class="form-control" placeholder="Test 123">
+        <input type="text" class="form-control" placeholder="">
         <button type="button" class="delete-answer-button btn btn-outline-danger"><i class="bi bi-trash"></i></button>
     </div>
 </template>
@@ -86,42 +86,37 @@
                     </label>
                     <button type="button" class="delete-question-button btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
                 </div>
-                <input id="questionTitle" type="text" class="form-control">
+                <input type="text" class="question-title form-control">
+                <input type="hidden" value="free-text" class="question-type">
             </div>
         </div>
-        <input type="hidden" name="question-number" class="question-number">
     </div>
 </template>
 
 <script>
+    function newQuestionButton(templateName) {
+        const questionsContainer = document.getElementById('questionsContainer');
+
+        const existingQuestions = questionsContainer.querySelectorAll('.question-container');
+        const newQuestionNumber = existingQuestions.length + 1;
+
+        const template = document.getElementById(templateName);
+        const newQuestion = template.content.cloneNode(true);
+
+        newQuestion.querySelector('.question-title').name = `question-${newQuestionNumber}-title`
+        newQuestion.querySelector('div').dataset.questionNumber = newQuestionNumber;
+        newQuestion.querySelector('.question-type').name = `question-${newQuestionNumber}-type`;
+
+        questionsContainer.appendChild(newQuestion);
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const questionsContainer = document.getElementById('questionsContainer');
         const addMultipleChoiceQuestionButton = document.getElementById('addMultipleChoiceQuestionButton');
         const addFreeTextQuestionButton = document.getElementById('addFreeTextQuestionButton');
 
-        addMultipleChoiceQuestionButton.addEventListener('click', function() {
-            const existingQuestions = questionsContainer.querySelectorAll('.question-container');
-            const newQuestionNumber = existingQuestions.length + 1;
-
-            const template = document.getElementById('multipleChoiceQuestionTemplate');
-            const newQuestion = template.content.cloneNode(true);
-
-            newQuestion.querySelector('.question-number').value = newQuestionNumber;
-
-            questionsContainer.appendChild(newQuestion);
-        });
-
-        addFreeTextQuestionButton.addEventListener('click', function() {
-            const existingQuestions = questionsContainer.querySelectorAll('.question-container');
-            const newQuestionNumber = existingQuestions.length + 1;
-
-            const template = document.getElementById('freeTextQuestionTemplate');
-            const newQuestion = template.content.cloneNode(true);
-
-            newQuestion.querySelector('.question-number').value = newQuestionNumber;
-
-            questionsContainer.appendChild(newQuestion);
-        });
+        addMultipleChoiceQuestionButton.addEventListener('click', () => newQuestionButton('multipleChoiceQuestionTemplate'));
+        addFreeTextQuestionButton.addEventListener('click', () => newQuestionButton('freeTextQuestionTemplate'));
 
         document.addEventListener('click', function(event) {
             if (event.target.classList.contains('delete-question-button')) {
@@ -137,7 +132,7 @@
             } else if (event.target.classList.contains('add-answer-button')) {
                 closestQuestion = event.target.closest('.question-container');
                 answersContainer = closestQuestion.querySelector('.answers-container')
-                questionNumber = closestQuestion.querySelector('.question-number').value;
+                questionNumber = closestQuestion.dataset.questionNumber;
 
                 const existingAnswers = answersContainer.querySelectorAll('.answer-container');
                 const newAnswerNumber = existingAnswers.length + 1;
@@ -145,7 +140,8 @@
                 const template = document.getElementById('answerTemplate');
                 const newAnswer = template.content.cloneNode(true);
 
-                newAnswer.querySelector('input').id = `answer-${questionNumber}-${newAnswerNumber}`;
+                newAnswer.querySelector('input').name = `answer-${questionNumber}-${newAnswerNumber}`;
+                newAnswer.querySelector('input').placeholder = `Answer ${newAnswerNumber}`;
 
                 answersContainer.appendChild(newAnswer);
             } else if (event.target.classList.contains('delete-answer-button')) {
