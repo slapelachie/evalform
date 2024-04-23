@@ -11,17 +11,15 @@ class DashboardController extends BaseController
         $surveyModel = new \App\Models\SurveysModel();
         $surveyResponsesModel = new \App\Models\SurveyResponsesModel();
 
-        // TODO: Need to redirect to login if not logged in
-
-        // TODO: Get user info
-        $user_id = 1;
+        $user_id = auth()->user()->id;
         $user_data = $userModel->find($user_id);
 
         // TODO: Add logic between business and personal
         $data['business_name'] = '';
 
-        if ($user_data['business_id'] != null) {
-            $business_data = $businessModel->where('id', $user_data['business_id'])->first();
+        $business_id = $user_data->business_id;
+        if ($business_id != null) {
+            $business_data = $businessModel->find($business_id);
             $data['business_name'] = $business_data['name'];
         }
 

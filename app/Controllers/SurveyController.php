@@ -13,7 +13,11 @@ class SurveyController extends BaseController
         $questionsModel = new \App\Models\QuestionsModel();
         $questionAnswerChoicesModel = new \App\Models\QuestionAnswerChoicesModel();
 
-        $data['survey'] = $surveysModel->where('id', $survey_id)->first();
+        $data['survey'] = $surveysModel->find($survey_id);
+        if ($data['survey'] == null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("This survey could not be found!");
+        }
+
         $data['questions'] = $questionsModel->where('survey_id', $survey_id)->orderBy('question_number', 'ASC')->findAll();
 
         foreach ($data['questions'] as &$question) {
@@ -22,6 +26,11 @@ class SurveyController extends BaseController
         unset($question);
 
         return view('survey', $data);
+    }
+
+    public function create()
+    {
+        return view('survey_create');
     }
 
     private function handleSurveyResponseError($status_code, $message)
@@ -117,6 +126,10 @@ class SurveyController extends BaseController
         $questionResponsesModel = new \App\Models\QuestionResponsesModel();
 
         $data['survey'] = $surveysModel->find($survey_id);
+        if ($data['survey'] == null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("This survey could not be found!");
+        }
+
         $data['questions'] = $questionsModel->where('survey_id', $survey_id)->orderBy('question_number', 'ASC')->findAll();
         
         foreach ($data['questions'] as &$question) {

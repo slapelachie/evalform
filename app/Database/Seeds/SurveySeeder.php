@@ -10,16 +10,8 @@ class SurveySeeder extends Seeder
     public function run()
     {
         $faker = Factory::create();
-        $user_data = 
-        [
-            'username' => $faker->userName(),
-            'business_id' => null,
-            'first_name' => $faker->firstName(),
-            'last_name'=> null,
-        ];
 
-        $this->db->table('users')->insert($user_data);
-        $user_id = $this->db->insertID();
+        $user_id = 1;
 
         $survey_data = [
             'name' => $faker->text(20),
