@@ -27,8 +27,9 @@ class SurveyController extends ResourceController
 
     public function create()
     {
-        $data = $this->request->getJSON(true);
         log_message('debug', 'create function called');
+        $data = $this->request->getJSON(true);
+        log_message('debug', 'processed data');
 
         if (!$this->model->insert($data)) {
             return $this->fail($this->model->errors());

@@ -30,79 +30,8 @@ class SurveyController extends BaseController
 
     public function create()
     {
-        return view('survey_create');
-    }
-
-    private function parseSurveySubmission($data)
-    {
-        $survey = [];
-        $survey['name'] = $data['survey-title'];
-        $survey['questions'] = [];
-
-        foreach ($data as $key => $value) {
-            if (preg_match('/question-(\d+)-(.*)/', $key, $matches)) {
-                $question_index = (int)$matches[1];
-                $question_key = $matches[2];
-
-                if (!isset($survey['questions'][$question_index])) {
-                    $survey['questions'][$question_index] = [
-                        'question_number' => $question_index,
-                        'answers' => [],
-                    ];
-                }
-
-                if ($question_key == 'title') {
-                    $survey['questions'][$question_index]['question'] = $value;
-                } elseif ($question_key == 'type') {
-                    $survey['questions'][$question_index]['type'] = $value;
-                }
-            } elseif (preg_match('/answer-(\d+)-(\d+)/', $key, $matches)) {
-                $question_index = (int)$matches[1];
-                $answer_index = (int)$matches[2];
-
-                $survey['questions'][$question_index]['answers'][] = [
-                    'position' => $answer_index,
-                    'answer' => $value,
-                ];
-            }
-        }
-
-        return $survey;
-    }
-
-    public function createSubmit()
-    {
-        $surveysModel = new \App\Models\SurveysModel();
-
-        $data = $this->request->getPost();
-        $survey = $this->parseSurveySubmission($data);
-
-        $survey_id = $surveysModel->insert([
-            'name' => $survey['name'],
-            'description' => "lorem",
-            'owner_id' => auth()->user()->id,
-        ], true);
-
-        //TODO: check if completed successfully
-
-        if ($survey_id == false) {
-            // Error handling
-            $error = $surveysModel->errors();
-            log_message('error', 'Database Insert Error: ' . print_r($error, true));
-        }
-
-
-        log_message('debug', $survey_id);
-
-
-        foreach ($survey['questions'] as $key => $question) {
-            print_r($question['question_number']);
-            print_r($question['type']);
-            print_r($question['question']);
-            print_r($question['answers']);
-        }
-
-        return 'yes';
+        $data['user_id'] = auth()->user()->id;
+        return view('survey_create', $data);
     }
 
     private function handleSurveyResponseError($status_code, $message)

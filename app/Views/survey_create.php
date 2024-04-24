@@ -4,7 +4,7 @@
 <section class="py-3">
     <div class="container">
         <h1 class="display-5 mb-3">Create a Survey</h1>
-        <form method="post">
+        <form>
             <div class="mb-3">
                 <label for="surveyTitle">
                     <h5>Title of Survey</h5>
@@ -18,7 +18,7 @@
                 <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addQuestionModal" id="addQuestionButton">Add Question</button>
             </div>
             <div class="mb-3 d-grid">
-                <input type="submit" class="btn btn-primary" value="Save Survey">
+                <button type="button" class="btn btn-primary" onclick="submitSurvey()">Save Survey</button>
             </div>
         </form>
     </div>
@@ -108,6 +108,33 @@
         newQuestion.querySelector('.question-type').name = `question-${newQuestionNumber}-type`;
 
         questionsContainer.appendChild(newQuestion);
+    }
+
+    function submitSurvey() {
+        const surveyTitle = document.getElementById("surveyTitle").value;
+
+        console.log("submitSurvey started")
+
+        fetch("<?= base_url('api/surveys') ?>", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    'name': surveyTitle,
+                    'description': 'Lorem',
+                    'owner_id': <?= $user_id ?>,
+                })
+            })
+            .then(response => console.log(response.json()))
+            .then(data => {
+                if (data) {
+                    console.log(data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error)
+            })
     }
 
     document.addEventListener('DOMContentLoaded', function() {

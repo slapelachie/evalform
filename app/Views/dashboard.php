@@ -18,7 +18,7 @@
                 <?php $focused_surveys = array_slice($surveys, 0, 5);
                 foreach ($focused_surveys as $survey) : ?>
                     <div class="col pe-1 my-2">
-                        <a href="<?= base_url('survey/manage/' . $survey['id']); ?>" style="color: inherit; text-decoration: none;">
+                        <a href="<?= base_url('surveys/' . $survey['id'] . '/manage'); ?>" style="color: inherit; text-decoration: none;">
                             <div class="card" style="width: 10rem">
                                 <img src="https://via.placeholder.com/50" alt="" class="card-img-top">
                                 <div class="card-body">
