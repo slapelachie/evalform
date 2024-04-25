@@ -18,6 +18,7 @@
                 <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addQuestionModal" id="addQuestionButton">Add Question</button>
             </div>
             <div class="mb-3 d-grid">
+                <div id="errorSaveAlert"></div>
                 <button type="button" class="btn btn-primary" onclick="submitSurvey()">Save Survey</button>
             </div>
         </form>
@@ -43,7 +44,7 @@
 </div>
 
 <template id="multipleChoiceQuestionTemplate">
-    <div class="question-container card mb-3">
+    <div class="question-container card mb-3" data-question-type="multiple_choice">
         <div class="card-body">
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -53,7 +54,6 @@
                     <button type="button" class="delete-question-button btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
                 </div>
                 <input type="text" class="question-title form-control">
-                <input type="hidden" value="multiple-choice" class="question-type">
             </div>
             <div>
                 <label for="answers">
@@ -77,7 +77,7 @@
 </template>
 
 <template id="freeTextQuestionTemplate">
-    <div class="question-container card mb-3">
+    <div class="question-container card mb-3" data-question-type="free_text">
         <div class="card-body">
             <div class="mb-2">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -87,13 +87,183 @@
                     <button type="button" class="delete-question-button btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
                 </div>
                 <input type="text" class="question-title form-control">
-                <input type="hidden" value="free-text" class="question-type">
             </div>
         </div>
     </div>
 </template>
 
 <script>
+    const alertPlaceHolder = document.getElementById('errorSaveAlert')
+
+    const appendAlert = (message, type) => {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = [
+            `<div class="alert alert-${type} alert-dismissible" role="alert">`,
+            `   <div>${message}</div>`,
+            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+            '</div>'
+        ].join('');
+
+        alertPlaceHolder.append(wrapper);
+    }
+
+    async function submitAPICall(apiUrl, data) {
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                appendAlert(`Error: ${errorData.messages['name']}`, 'danger');
+                return null;
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error: ', error)
+            return null;
+        }
+
+    }
+
+    async function submitSurveyData(apiUrl) {
+        const surveyTitle = document.getElementById("surveyTitle").value;
+        const surveyData = {
+            'name': surveyTitle,
+            'description': 'Lorem',
+            'owner_id': <?= $user_id ?>,
+        }
+
+        try {
+            const result = await submitAPICall(`${apiUrl}/surveys`, surveyData);
+            if (result && result.id) {
+                console.log("Survey submitted with ID:", result.id);
+                return result.id;
+            }
+
+            console.error("Failed to submit survey")
+            return null;
+        } catch (error) {
+            console.error('Error: ', error)
+            return null;
+        }
+    }
+
+    function getQuestionAnswers(questionContainer) {
+        const answersContainer = questionContainer.querySelector('.answers-container');
+        const answerContainers = answersContainer.querySelectorAll('.answer-container');
+
+        let answers = [];
+        answerContainers.forEach(answerContainer => {
+            answers.push({
+                'position': parseInt(answerContainer.dataset.answerNumber),
+                'answer': answerContainer.querySelector('input').value,
+            });
+        });
+
+        return answers;
+    }
+
+    function getQuestions() {
+        const questionsContainer = document.getElementById('questionsContainer');
+        const questionContainers = questionsContainer.querySelectorAll('.question-container');
+
+        let questions = [];
+        questionContainers.forEach(questionContainer => {
+            const questionType = questionContainer.dataset.questionType;
+
+            let answers = questionType == 'multiple_choice' ? getQuestionAnswers(questionContainer) : [];
+
+            questions.push({
+                'question_number': parseInt(questionContainer.dataset.questionNumber),
+                'type': questionType,
+                'question': questionContainer.querySelector('input').value,
+                'answers': answers
+            });
+        });
+
+        return questions;
+    }
+
+    async function submitQuestionData(questionData, questionApiUrl) {
+        try {
+            const result = await submitAPICall(questionApiUrl, questionData);
+            if (result && result.id) {
+                console.log("Question submitted with ID:", result.id);
+                return result.id
+            }
+
+            console.error("Failed to submit question")
+            return null;
+        } catch (error) {
+            console.error('Error: ', error)
+            return null;
+        }
+    }
+
+    async function submitQuestionsWithAnswers(surveyId, apiUrl) {
+        let questions = getQuestions();
+
+        for (const question of questions) {
+            const questionData = {
+                'survey_id': surveyId,
+                'type': question['type'],
+                'question_number': question['question_number'],
+                'question': question['question'],
+            }
+
+            try {
+                const questionId = await submitQuestionData(questionData, `${apiUrl}/questions`);
+                if (!questionId) {
+                    console.error("No question ID given!")
+                    return null;
+                }
+
+                for (const answer of question['answers']) {
+                    const answerData = {
+                        'question_id': questionId,
+                        'position': answer['position'],
+                        'answer': answer['answer']
+                    }
+
+                    try {
+                        const result = await submitAPICall(`${apiUrl}/answers`, answerData);
+                        if (result && result.id) {
+                            console.log("Answer submitted with ID:", result.id);
+                        } else {
+                            console.error("Failed to submit answer")
+                            return null;
+                        }
+                    } catch (error) {
+                        console.error('Error: ', error)
+                        return null;
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error submitting question:', error);
+            }
+        }
+    }
+
+    async function submitSurvey() {
+        const apiUrl = "<?= base_url('api') ?>"
+
+        // Submit survey information
+        surveyId = await submitSurveyData(apiUrl);
+        if (surveyId == null) {
+            // TODO
+        }
+
+        // Submit question and answer information
+        await submitQuestionsWithAnswers(surveyId, apiUrl);
+    }
+
     function newQuestionButton(templateName) {
         const questionsContainer = document.getElementById('questionsContainer');
 
@@ -103,38 +273,10 @@
         const template = document.getElementById(templateName);
         const newQuestion = template.content.cloneNode(true);
 
-        newQuestion.querySelector('.question-title').name = `question-${newQuestionNumber}-title`
+        // newQuestion.querySelector('.question-title').name = `question-${newQuestionNumber}-title`
         newQuestion.querySelector('div').dataset.questionNumber = newQuestionNumber;
-        newQuestion.querySelector('.question-type').name = `question-${newQuestionNumber}-type`;
 
         questionsContainer.appendChild(newQuestion);
-    }
-
-    function submitSurvey() {
-        const surveyTitle = document.getElementById("surveyTitle").value;
-
-        console.log("submitSurvey started")
-
-        fetch("<?= base_url('api/surveys') ?>", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    'name': surveyTitle,
-                    'description': 'Lorem',
-                    'owner_id': <?= $user_id ?>,
-                })
-            })
-            .then(response => console.log(response.json()))
-            .then(data => {
-                if (data) {
-                    console.log(data);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error)
-            })
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -154,7 +296,7 @@
                 const existingQuestions = questionsContainer.querySelectorAll('.question-container');
                 newQuestionNumber = 0;
                 existingQuestions.forEach(question => {
-                    question.querySelector('.question-number').value = ++newQuestionNumber;
+                    question.dataset.questionNumber = ++newQuestionNumber;
                 });
             } else if (event.target.classList.contains('add-answer-button')) {
                 closestQuestion = event.target.closest('.question-container');
@@ -167,13 +309,14 @@
                 const template = document.getElementById('answerTemplate');
                 const newAnswer = template.content.cloneNode(true);
 
-                newAnswer.querySelector('input').name = `answer-${questionNumber}-${newAnswerNumber}`;
+                newAnswer.querySelector('div').dataset.answerNumber = newAnswerNumber;
+
                 newAnswer.querySelector('input').placeholder = `Answer ${newAnswerNumber}`;
 
                 answersContainer.appendChild(newAnswer);
             } else if (event.target.classList.contains('delete-answer-button')) {
                 closestQuestion = event.target.closest('.question-container');
-                questionNumber = closestQuestion.querySelector('.question-number').value;
+                questionNumber = closestQuestion.dataset.questionNumber;
 
                 closestAnswer = event.target.closest('.answer-container');
                 closestAnswer.remove();
@@ -182,8 +325,8 @@
                 const existingAnswers = questionsContainer.querySelectorAll('.answer-container');
                 newAnswerNumber = 0;
                 existingAnswers.forEach(answer => {
-                    answer.querySelector('input').id = `answer-${questionNumber}-${++newAnswerNumber}`;
-                    console.log(answer.querySelector('input').id);
+                    answer.dataset.answerNumber = ++newAnswerNumber;
+                    answer.querySelector('input').placeholder = `Answer ${newAnswerNumber}`;
                 });
 
             }

@@ -10,7 +10,7 @@ class QuestionAnswerChoicesModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $allowedFields    = ['question_id', 'answer'];
+    protected $allowedFields    = ['question_id', 'position', 'answer'];
 
     protected $useTimestamps = false;
 
