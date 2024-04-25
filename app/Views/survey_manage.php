@@ -4,7 +4,14 @@
 <section class="py-3">
     <div class="container">
         <div class="mb-3">
-            <h1 class="display-5 mb-2">Manage <?= $survey['name'] ?></h1>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h1 class="display-5 mb-2">Manage <?= $survey['name'] ?></h1>
+                <div class="align-items-center ">
+                    <a href="/surveys/<?= $survey["id"] ?>"><button type="button" class="btn btn-primary btn-sm">View <i class="bi bi-eye"></i></button></a>
+                    <a href="/surveys/<?= $survey["id"] ?>/edit"><button type="button" class="btn btn-warning btn-sm">Edit <i class="bi bi-pencil"></i></button></a>
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteSurveyModal">Delete <i class="bi bi-trash"></i></button>
+                </div>
+            </div>
             <p class="text-muted"><?= $survey['description'] ?></p>
             <h2 class="mb-2 display-6">Analytics</h2>
         </div>
@@ -102,5 +109,50 @@
         </div>
     </div>
 </section>
+
+<div class="modal fade" id="deleteSurveyModal" tabindex="-1" aria-labelledby="deleteSurveyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteSurveyLabel">Delete Survey "<?= $survey['name']; ?>"</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-grid gap-3">
+                <button id="confirmSurveyDeleteButton" type="button" class="btn btn-outline-danger" data-bs-dismiss="modal" onclick="deleteSurvey()">Yes, delete this survey.</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function deleteSurvey() {
+        try {
+            const response = await fetch('<?= base_url('/api/surveys/') . $survey['id'] ?>', {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+            }
+
+            try {
+                await response.json();
+            } catch (error) {
+                throw error;
+            }
+        } catch (error) {
+            // TODO show flash message
+            console.log(error);
+            return;
+        }
+
+        // Redirect to dashboard
+        window.location.href = '<?= base_url('/') ?>';
+        return;
+    }
+</script>
 
 <?= $this->endSection() ?>
