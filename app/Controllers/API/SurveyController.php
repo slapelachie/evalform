@@ -2,6 +2,7 @@
 
 namespace App\Controllers\API;
 
+use App\Models\QuestionsModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 
@@ -25,18 +26,72 @@ class SurveyController extends ResourceController
         return $this->respond($survey);
     }
 
+    private function insertQuestions($questions, $surveyId)
+    {
+        $questionsModel = new \App\Models\QuestionsModel();
+
+        foreach ($questions as $question) {
+            $questionData = [
+                'survey_id' => $surveyId,
+                'type' => $question['type'],
+                'question_number' => $question['question_number'],
+                'question' => $question['question'],
+            ];
+
+            // Insert questions
+            if (!$questionsModel->insert($questionData)) {
+                $this->model->transRollback();
+                return $this->fail($questionsModel->errors());
+            }
+
+            $questionId = $questionsModel->getInsertID();
+
+            // Handle answers if they exist
+            if (isset($question['answers']) && $question['type'] == 'multiple_choice') {
+                $this->insertAnswers($question['answers'], $questionId);
+            }
+        }
+    }
+
+    private function insertAnswers($answers, $questionId)
+    {
+        $questionAnswerChoicesModel = new \App\Models\QuestionAnswerChoicesModel();
+
+        foreach ($answers as $answer) {
+            $answerData = [
+                'question_id' => $questionId,
+                'position' => $answer['position'],
+                'answer' => $answer['answer'],
+            ];
+
+            if (!$questionAnswerChoicesModel->insert($answerData)) {
+                $this->model->transRollback();
+                return $this->fail($questionAnswerChoicesModel->errors());
+            }
+        }
+    }
+
     public function create()
     {
-        log_message('debug', 'create function called');
+        $this->model->transStart();
+
         $data = $this->request->getJSON(true);
-        log_message('debug', 'processed data');
 
         if (!$this->model->insert($data)) {
+            $this->model->transRollback();
             return $this->fail($this->model->errors());
         }
 
-        $survey_id = $this->model->getInsertID();
-        $survey = $this->model->find($survey_id);
+        $surveyId = $this->model->getInsertID();
+
+        // Handle questions if they exist
+        if (isset($data['questions'])) {
+            $this->insertQuestions($data['questions'], $surveyId);
+        }
+
+        $this->model->transComplete();
+
+        $survey = $this->model->find($surveyId);
 
         return $this->respondCreated($survey);
     }
@@ -51,8 +106,8 @@ class SurveyController extends ResourceController
         $data = $this->request->getJSON(true);
 
         if ($this->model->update($id, $data)) {
-            $updated_survey = $this->model->find($id);
-            return $this->respondUpdated($updated_survey);
+            $updatedSurvey = $this->model->find($id);
+            return $this->respondUpdated($updatedSurvey);
         }
         return $this->failServerError('Could not update the survey');
     }

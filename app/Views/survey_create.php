@@ -118,6 +118,7 @@
             });
 
             if (!response.ok) {
+                console.error(await response.json());
                 throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
             }
 
@@ -130,28 +131,6 @@
             throw error;
         }
 
-    }
-
-    async function submitSurveyData(apiUrl) {
-        const surveyTitle = document.getElementById("surveyTitle").value.trim();
-        const userId = document.getElementById("surveyForm").dataset.userId;
-
-        const surveyData = {
-            'name': surveyTitle,
-            'description': 'Lorem',
-            'owner_id': userId,
-        }
-
-        try {
-            const result = await submitAPICall(`${apiUrl}/surveys`, surveyData);
-            if (result && result.id) {
-                return result.id;
-            }
-
-            throw new Error("Failed to submit survey; no survey ID returned.");
-        } catch (error) {
-            throw error;
-        }
     }
 
     function getQuestionAnswers(questionContainer) {
@@ -190,99 +169,31 @@
         return questions;
     }
 
-    async function submitQuestionData(question, surveyId, questionApiUrl) {
-        const questionData = {
-            'survey_id': surveyId,
-            'type': question['type'],
-            'question_number': question['question_number'],
-            'question': question['question'],
-        }
+    function getSurveyData() {
+        const surveyTitle = document.getElementById("surveyTitle").value.trim();
+        const userId = document.getElementById("surveyForm").dataset.userId;
 
-        try {
-            const result = await submitAPICall(questionApiUrl, questionData);
-            if (result && result.id) {
-                return result.id
-            }
-
-            throw new Error("Failed to submit question; no question ID returned.");
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async function submitAnswerData(answer, questionId, answersApiUrl) {
-        const answerData = {
-            'question_id': questionId,
-            'position': answer['position'],
-            'answer': answer['answer']
-        }
-
-        try {
-            const result = await submitAPICall(answersApiUrl, answerData);
-            if (!result || !result.id) {
-                throw new Error("Failed to submit answer.");
-            }
-
-            return result.id;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async function submitQuestionWithAnswers(question, surveyId, apiUrl) {
-        try {
-            const questionId = await submitQuestionData(question, surveyId, `${apiUrl}/questions`);
-            console.log(questionId)
-            if (!questionId) {
-                throw new Error("No question ID was returned.");
-            }
-
-            for (const answer of question['answers']) {
-                try {
-                    await submitAnswerData(answer, questionId, `${apiUrl}/answers`)
-                } catch (error) {
-                    throw error;
-                }
-            }
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async function submitQuestionsWithAnswers(surveyId, apiUrl) {
-        let questions = getQuestions();
-
-        for (const question of questions) {
-            try {
-                await submitQuestionWithAnswers(question, surveyId, apiUrl);
-            } catch (error) {
-                throw error;
-            }
+        return {
+            'name': surveyTitle,
+            'description': 'Lorem',
+            'owner_id': userId,
+            'questions': getQuestions(),
         }
     }
 
     async function submitSurvey() {
         const apiUrl = "<?= base_url('api') ?>"
 
-        // Submit survey information
-        try {
-            var surveyId = await submitSurveyData(apiUrl);
-        } catch (error) {
-            throw error;
-        }
-
-        if (surveyId == null) {
-            throw new Error("No survey ID returned.");
-        }
+        const surveyData = getSurveyData();
 
         // Submit question and answer information
         try {
-            await submitQuestionsWithAnswers(surveyId, apiUrl);
+            var response = await submitAPICall(`${apiUrl}/surveys`, surveyData)
         } catch (error) {
             throw error;
         }
 
-        return surveyId;
+        return response.id;
     }
 
     async function saveSurvey() {

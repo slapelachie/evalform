@@ -85,6 +85,20 @@ class SurveyController extends BaseController
 
         $post_data = $this->request->getPost();
 
+        $client = \Config\Services::curlrequest();
+
+        log_message('debug', "base_url: " . base_url('/api/surveys'));
+
+        $response = $client->request('GET', base_url('/api/surveys'), [
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+            'timeout' => 10,
+        ]);
+
+        print_r($response->getJSON());
+        return;
+
         // TODO: Check if survey actually exists
 
         // Check if post data is valid

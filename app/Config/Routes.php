@@ -13,10 +13,9 @@ $routes->post('surveys/create', 'SurveyController::createSubmit');
 
 $routes->get('surveys/(:num)', 'SurveyController::index/$1');
 $routes->get('surveys/(:num)/manage', 'SurveyController::manage/$1');
-// $routes->get('survey/manage/(:num)', 'SurveyController::manage/$1');
-// $routes->get('survey/edit/(:num)', 'SurveyController::edit/$1');
+$routes->get('surveys/(:num)/edit', 'SurveyController::edit/$1');
 
-// $routes->post('survey/(:num)', 'SurveyController::surveySubmit/$1');
+$routes->post('surveys/(:num)', 'SurveyController::surveySubmit/$1');
 
 /* Testing Route */
 $routes->get('test/(:num)', 'TestController::index/$1');

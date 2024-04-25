@@ -8,7 +8,7 @@
             <div class="row flex-nowrap overflow-auto">
                 <div class="col pe-1 my-2">
                     <a href="<?= base_url('/surveys/create') ?>" style="color: inherit; text-decoration: none;">
-                        <div class="card" style="width: 10rem; height: 15rem">
+                        <div class="card" style="width: 10rem; height: 14rem">
                             <div class="card-body d-flex align-items-center justify-content-center">
                                 <h5 class="card-title text-center">Create a New Survey</p>
                             </div>
@@ -19,7 +19,7 @@
                 foreach ($focused_surveys as $survey) : ?>
                     <div class="col pe-1 my-2">
                         <a href="<?= base_url('surveys/' . $survey['id'] . '/manage'); ?>" style="color: inherit; text-decoration: none;">
-                            <div class="card" style="width: 10rem" ; height: 15rem">
+                            <div class="card" style="width: 10rem ; height: 14rem">
                                 <img src="https://via.placeholder.com/50" alt="" class="card-img-top">
                                 <div class="card-body">
                                     <p class="card-title" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
@@ -32,7 +32,7 @@
                 <?php if (count($surveys) > 5) { ?>
                     <div class="col pe-1 my-2">
                         <a href="#" style="color: inherit; text-decoration: none;">
-                            <div class="card" style="width: 10rem; height: 15rem"">
+                            <div class="card" style="width: 10rem; height: 14rem"">
                                 <div class=" card-body d-flex align-items-center justify-content-center">
                                 <h5 class="card-title text-center">View More</p>
                             </div>
