@@ -4,12 +4,12 @@
 <section class="py-3">
     <div class="container">
         <h1 class="display-5 mb-3">Create a Survey</h1>
-        <form>
+        <form id="surveyForm" data-user-id="<?= $user_id ?>">
             <div class="mb-3">
                 <label for="surveyTitle">
-                    <h5>Title of Survey</h5>
+                    Title of Survey <span class="text-danger">*</span>
                 </label>
-                <input id="surveyTitle" name="survey-title" type="text" class="form-control">
+                <input id="surveyTitle" name="survey-title" type="text" class="form-control" required>
             </div>
             <div id="questionsContainer">
 
@@ -19,7 +19,7 @@
             </div>
             <div class="mb-3 d-grid">
                 <div id="errorSaveAlert"></div>
-                <button type="button" class="btn btn-primary" onclick="submitSurvey()">Save Survey</button>
+                <button id="saveSurveyButton" type="button" class="btn btn-primary" onclick="saveSurvey()">Save Survey</button>
             </div>
         </form>
     </div>
@@ -49,15 +49,15 @@
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <label for="questionTitle">
-                        <h6>Multiple Choice Question Title</h6>
+                        Multiple Choice Question Title <span class="text-danger">*</span>
                     </label>
                     <button type="button" class="delete-question-button btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
                 </div>
-                <input type="text" class="question-title form-control">
+                <input type="text" class="question-title form-control" required>
             </div>
             <div>
                 <label for="answers">
-                    <h6>Answers</h6>
+                    Answers
                 </label>
                 <div class="answers-container">
                 </div>
@@ -71,7 +71,7 @@
 
 <template id="answerTemplate">
     <div class="answer-container input-group mb-2">
-        <input type="text" class="form-control" placeholder="">
+        <input type="text" class="form-control" placeholder="" required>
         <button type="button" class="delete-answer-button btn btn-outline-danger"><i class="bi bi-trash"></i></button>
     </div>
 </template>
@@ -82,11 +82,11 @@
             <div class="mb-2">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <label for="questionTitle">
-                        <h6>Free Text Question Title</h6>
+                        Free Text Question Title <span class="text-danger">*</span>
                     </label>
                     <button type="button" class="delete-question-button btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
                 </div>
-                <input type="text" class="question-title form-control">
+                <input type="text" class="question-title form-control" required>
             </div>
         </div>
     </div>
@@ -118,39 +118,39 @@
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                appendAlert(`Error: ${errorData.messages['name']}`, 'danger');
-                return null;
+                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
             }
 
-            return await response.json();
+            try {
+                return await response.json();
+            } catch (error) {
+                throw error;
+            }
         } catch (error) {
-            console.error('Error: ', error)
-            return null;
+            throw error;
         }
 
     }
 
     async function submitSurveyData(apiUrl) {
-        const surveyTitle = document.getElementById("surveyTitle").value;
+        const surveyTitle = document.getElementById("surveyTitle").value.trim();
+        const userId = document.getElementById("surveyForm").dataset.userId;
+
         const surveyData = {
             'name': surveyTitle,
             'description': 'Lorem',
-            'owner_id': <?= $user_id ?>,
+            'owner_id': userId,
         }
 
         try {
             const result = await submitAPICall(`${apiUrl}/surveys`, surveyData);
             if (result && result.id) {
-                console.log("Survey submitted with ID:", result.id);
                 return result.id;
             }
 
-            console.error("Failed to submit survey")
-            return null;
+            throw new Error("Failed to submit survey; no survey ID returned.");
         } catch (error) {
-            console.error('Error: ', error)
-            return null;
+            throw error;
         }
     }
 
@@ -162,7 +162,7 @@
         answerContainers.forEach(answerContainer => {
             answers.push({
                 'position': parseInt(answerContainer.dataset.answerNumber),
-                'answer': answerContainer.querySelector('input').value,
+                'answer': answerContainer.querySelector('input').value.trim(),
             });
         });
 
@@ -182,7 +182,7 @@
             questions.push({
                 'question_number': parseInt(questionContainer.dataset.questionNumber),
                 'type': questionType,
-                'question': questionContainer.querySelector('input').value,
+                'question': questionContainer.querySelector('input').value.trim(),
                 'answers': answers
             });
         });
@@ -190,19 +190,62 @@
         return questions;
     }
 
-    async function submitQuestionData(questionData, questionApiUrl) {
+    async function submitQuestionData(question, surveyId, questionApiUrl) {
+        const questionData = {
+            'survey_id': surveyId,
+            'type': question['type'],
+            'question_number': question['question_number'],
+            'question': question['question'],
+        }
+
         try {
             const result = await submitAPICall(questionApiUrl, questionData);
             if (result && result.id) {
-                console.log("Question submitted with ID:", result.id);
                 return result.id
             }
 
-            console.error("Failed to submit question")
-            return null;
+            throw new Error("Failed to submit question; no question ID returned.");
         } catch (error) {
-            console.error('Error: ', error)
-            return null;
+            throw error;
+        }
+    }
+
+    async function submitAnswerData(answer, questionId, answersApiUrl) {
+        const answerData = {
+            'question_id': questionId,
+            'position': answer['position'],
+            'answer': answer['answer']
+        }
+
+        try {
+            const result = await submitAPICall(answersApiUrl, answerData);
+            if (!result || !result.id) {
+                throw new Error("Failed to submit answer.");
+            }
+
+            return result.id;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async function submitQuestionWithAnswers(question, surveyId, apiUrl) {
+        try {
+            const questionId = await submitQuestionData(question, surveyId, `${apiUrl}/questions`);
+            console.log(questionId)
+            if (!questionId) {
+                throw new Error("No question ID was returned.");
+            }
+
+            for (const answer of question['answers']) {
+                try {
+                    await submitAnswerData(answer, questionId, `${apiUrl}/answers`)
+                } catch (error) {
+                    throw error;
+                }
+            }
+        } catch (error) {
+            throw error;
         }
     }
 
@@ -210,43 +253,10 @@
         let questions = getQuestions();
 
         for (const question of questions) {
-            const questionData = {
-                'survey_id': surveyId,
-                'type': question['type'],
-                'question_number': question['question_number'],
-                'question': question['question'],
-            }
-
             try {
-                const questionId = await submitQuestionData(questionData, `${apiUrl}/questions`);
-                if (!questionId) {
-                    console.error("No question ID given!")
-                    return null;
-                }
-
-                for (const answer of question['answers']) {
-                    const answerData = {
-                        'question_id': questionId,
-                        'position': answer['position'],
-                        'answer': answer['answer']
-                    }
-
-                    try {
-                        const result = await submitAPICall(`${apiUrl}/answers`, answerData);
-                        if (result && result.id) {
-                            console.log("Answer submitted with ID:", result.id);
-                        } else {
-                            console.error("Failed to submit answer")
-                            return null;
-                        }
-                    } catch (error) {
-                        console.error('Error: ', error)
-                        return null;
-                    }
-                }
-
+                await submitQuestionWithAnswers(question, surveyId, apiUrl);
             } catch (error) {
-                console.error('Error submitting question:', error);
+                throw error;
             }
         }
     }
@@ -255,13 +265,48 @@
         const apiUrl = "<?= base_url('api') ?>"
 
         // Submit survey information
-        surveyId = await submitSurveyData(apiUrl);
+        try {
+            var surveyId = await submitSurveyData(apiUrl);
+        } catch (error) {
+            throw error;
+        }
+
         if (surveyId == null) {
-            // TODO
+            throw new Error("No survey ID returned.");
         }
 
         // Submit question and answer information
-        await submitQuestionsWithAnswers(surveyId, apiUrl);
+        try {
+            await submitQuestionsWithAnswers(surveyId, apiUrl);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async function saveSurvey() {
+        // Check validation
+        const surveyForm = document.getElementById('surveyForm');
+        if (!surveyForm.checkValidity()) {
+            appendAlert('Please fill out all required fields.', 'danger');
+            return;
+        }
+
+        // Disable Save Button
+        const saveSurveyButton = document.getElementById('saveSurveyButton');
+        saveSurveyButton.disabled = true;
+
+        // Try submitting the survey
+        try {
+            await submitSurvey();
+        } catch (error) {
+            appendAlert(error.message, 'danger');
+            console.error(error);
+
+            saveSurveyButton.disabled = false;
+            return;
+        }
+
+        // TODO: Redirect to successful creation page
     }
 
     function newQuestionButton(templateName) {
@@ -273,7 +318,6 @@
         const template = document.getElementById(templateName);
         const newQuestion = template.content.cloneNode(true);
 
-        // newQuestion.querySelector('.question-title').name = `question-${newQuestionNumber}-title`
         newQuestion.querySelector('div').dataset.questionNumber = newQuestionNumber;
 
         questionsContainer.appendChild(newQuestion);
