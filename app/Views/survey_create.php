@@ -281,6 +281,8 @@
         } catch (error) {
             throw error;
         }
+
+        return surveyId;
     }
 
     async function saveSurvey() {
@@ -297,7 +299,7 @@
 
         // Try submitting the survey
         try {
-            await submitSurvey();
+            var surveyId = await submitSurvey();
         } catch (error) {
             appendAlert(error.message, 'danger');
             console.error(error);
@@ -306,7 +308,8 @@
             return;
         }
 
-        // TODO: Redirect to successful creation page
+        // Redirect to successful creation page
+        window.location.href = `<?= base_url('surveys/') ?>${surveyId}/manage`;
     }
 
     function newQuestionButton(templateName) {
