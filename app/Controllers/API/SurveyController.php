@@ -11,9 +11,33 @@ class SurveyController extends ResourceController
     protected $modelName = 'App\Models\SurveysModel';
     protected $format = 'json';
 
+    private function getQuestions($surveyId)
+    {
+        $questionsModel = new \App\Models\QuestionsModel();
+        $questionAnswerChoicesModel = new \App\Models\QuestionAnswerChoicesModel();
+
+        $questions = $questionsModel->where('survey_id', $surveyId)->findAll();
+
+        foreach ($questions as &$question) {
+            $answers = $questionAnswerChoicesModel->where('question_id', $question['id'])->findAll();
+            $question['answers'] = $answers;
+        }
+        unset($question);
+
+        return $questions;
+    }
+
     public function index()
     {
-        return $this->respond($this->model->findAll());
+        $surveys = $this->model->findall();
+
+        foreach ($surveys as &$survey) {
+            $questions = $this->getQuestions($survey['id']);
+            $survey['questions'] = $questions;
+        }
+        unset($survey);
+
+        return $this->respond($surveys);
     }
 
     public function show($id = null)
@@ -22,6 +46,8 @@ class SurveyController extends ResourceController
         if ($survey == null) {
             return $this->failNotFound('Survey not found with id: ' . $id);
         }
+
+        $survey['questions'] = $this->getQuestions($id);
 
         return $this->respond($survey);
     }
@@ -40,15 +66,21 @@ class SurveyController extends ResourceController
 
             // Insert questions
             if (!$questionsModel->insert($questionData)) {
-                $this->model->transRollback();
-                return $this->fail($questionsModel->errors());
+                $errors = $questionsModel->errors();
+                $errorMessage = is_array($errors) ? implode('; ', $errors) : $errors;
+
+                throw new \Exception($errorMessage);
             }
 
             $questionId = $questionsModel->getInsertID();
 
             // Handle answers if they exist
             if (isset($question['answers']) && $question['type'] == 'multiple_choice') {
-                $this->insertAnswers($question['answers'], $questionId);
+                try {
+                    $this->insertAnswers($question['answers'], $questionId);
+                } catch (\Exception $error) {
+                    throw $error;
+                }
             }
         }
     }
@@ -65,8 +97,10 @@ class SurveyController extends ResourceController
             ];
 
             if (!$questionAnswerChoicesModel->insert($answerData)) {
-                $this->model->transRollback();
-                return $this->fail($questionAnswerChoicesModel->errors());
+                $errors = $questionAnswerChoicesModel->errors();
+                $errorMessage = is_array($errors) ? implode('; ', $errors) : $errors;
+
+                throw new \Exception($errorMessage);
             }
         }
     }
@@ -86,12 +120,19 @@ class SurveyController extends ResourceController
 
         // Handle questions if they exist
         if (isset($data['questions'])) {
-            $this->insertQuestions($data['questions'], $surveyId);
+            try {
+                $this->insertQuestions($data['questions'], $surveyId);
+            } catch (\Exception $error) {
+                $this->model->transRollback();
+                return $this->fail($error);
+            }
         }
 
         $this->model->transComplete();
 
         $survey = $this->model->find($surveyId);
+
+        $survey["questions"] = $this->getQuestions($surveyId);
 
         return $this->respondCreated($survey);
     }
