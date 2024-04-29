@@ -34,102 +34,6 @@ class SurveyController extends BaseController
         return view('survey_create', $data);
     }
 
-    private function handleSurveyResponseError($status_code, $message)
-    {
-        log_message('error', $message);
-        $this->response->setStatusCode($status_code)->setJSON(['error' => $message]);
-    }
-
-    private function createSurveyResponse(int $survey_id)
-    {
-        $surveyResponsesModel = new \App\Models\SurveyResponsesModel();
-
-        $survey_response_data = ['survey_id' => $survey_id];
-        return $surveyResponsesModel->insert($survey_response_data, true);
-    }
-
-    private function insertQuestionResponse(int $question_id, int $survey_response_id, $answer)
-    {
-        $questionsModel = new \App\Models\QuestionsModel();
-        $questionResponsesModel = new \App\Models\QuestionResponsesModel();
-
-        $question = $questionsModel->find($question_id);
-        if (!$question) {
-            $this->handleSurveyResponseError(400, "Question not found with id $question_id");
-            return false;
-        }
-
-        $question_response_payload = [
-            'survey_response_id' => $survey_response_id,
-            'question_id' => $question_id,
-            'answer_id' => ($question['type'] == 'multiple_choice') ? $answer : null,
-            'answer_text' => ($question['type'] == 'free_text') ? $answer : null,
-        ];
-
-        $questionResponsesModel->insert($question_response_payload);
-    }
-
-    private function processQuestionResponses($post_data, $survey_response_id)
-    {
-        // Process each survey question response
-        foreach ($post_data as $question_id => $answer) {
-            $this->insertQuestionResponse($question_id, $survey_response_id, $answer);
-        }
-
-        return true;
-    }
-
-    public function surveySubmit($survey_id)
-    {
-        $surveysModel = new \App\Models\SurveysModel();
-
-        $post_data = $this->request->getPost();
-
-        $client = \Config\Services::curlrequest();
-
-        log_message('debug', "base_url: " . base_url('/api/surveys'));
-
-        $response = $client->request('GET', base_url('/api/surveys'), [
-            'headers' => [
-                'Accept' => 'application/json',
-            ],
-            'timeout' => 10,
-        ]);
-
-        print_r($response->getJSON());
-        return;
-
-        // TODO: Check if survey actually exists
-
-        // Check if post data is valid
-        if (empty($post_data)) {
-            return $this->handleSurveyResponseError(400, 'Invalid post data!');
-        }
-
-        // Start a transaction
-        db_connect()->transBegin();
-
-        // Create survey response
-        $survey_response_id = $this->createSurveyResponse($survey_id);
-
-        if (!$this->processQuestionResponses($post_data, $survey_response_id)) {
-            // Error handling is done within the function
-            db_connect()->transRollback();
-            return;
-        }
-
-        // Check if any errors occured, rollback if it has
-        if (db_connect()->transStatus() === false) {
-            db_connect()->transRollback();
-            // TODO: display end of survey page error
-            return $this->handleSurveyResponseError(500, "Error processing your request");
-        }
-
-        db_connect()->transCommit();
-
-        $data['survey'] = $surveysModel->find($survey_id);
-        return view('survey_complete', $data);
-    }
 
     public function manage($survey_id)
     {
@@ -171,5 +75,10 @@ class SurveyController extends BaseController
     public function edit($survey_id)
     {
         //
+    }
+
+    public function thankYou()
+    {
+        return view("survey_complete");
     }
 }

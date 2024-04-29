@@ -137,6 +137,8 @@
             submitSurveyButton.disabled = false;
             return;
         }
+
+        window.location.href = `<?= base_url('surveys/thank-you') ?>`;
     }
 </script>
 
