@@ -26,7 +26,7 @@
                 </div>
             <?php endforeach; ?>
             <div class="mb-3 d-grid">
-                <div id="errorSubmitAlert"></div>
+                <div id="alert"></div>
                 <button id="submitSurveyButton" type="button" class="btn btn-primary" onclick="submitSurvey()">Submit Survey</button>
             </div>
         </form>
@@ -34,20 +34,6 @@
 </section>
 
 <script>
-    const alertPlaceHolder = document.getElementById('errorSubmitAlert')
-
-    const appendAlert = (message, type) => {
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = [
-            `<div class="alert alert-${type} alert-dismissible" role="alert">`,
-            `   <div>${message}</div>`,
-            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-            '</div>'
-        ].join('');
-
-        alertPlaceHolder.append(wrapper);
-    }
-
     async function submitAPICall(apiUrl, data) {
         try {
             const response = await fetch(apiUrl, {

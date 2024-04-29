@@ -18,7 +18,7 @@
                 <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addQuestionModal" id="addQuestionButton">Add Question</button>
             </div>
             <div class="mb-3 d-grid">
-                <div id="errorSaveAlert"></div>
+                <div id="alert"></div>
                 <button id="saveSurveyButton" type="button" class="btn btn-primary" onclick="saveSurvey()">Save Survey</button>
             </div>
         </form>
@@ -93,20 +93,6 @@
 </template>
 
 <script>
-    const alertPlaceHolder = document.getElementById('errorSaveAlert')
-
-    const appendAlert = (message, type) => {
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = [
-            `<div class="alert alert-${type} alert-dismissible" role="alert">`,
-            `   <div>${message}</div>`,
-            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-            '</div>'
-        ].join('');
-
-        alertPlaceHolder.append(wrapper);
-    }
-
     async function submitAPICall(apiUrl, data) {
         try {
             const response = await fetch(apiUrl, {

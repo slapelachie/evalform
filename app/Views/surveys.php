@@ -7,7 +7,7 @@
             <h1>Your Surveys</h1>
             <button class="btn btn-outline-primary" type="button" onclick="refreshSurveys()">Refresh</button>
         </div>
-        <div id="errorSurveyFetchAlert"></div>
+        <div id="alert"></div>
         <div class="my-3">
             <div class="row">
                 <div class="col-md mb-1">
@@ -65,20 +65,6 @@
 </template>
 
 <script>
-    const alertPlaceHolder = document.getElementById('errorSurveyFetchAlert')
-
-    const appendAlert = (message, type) => {
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = [
-            `<div class="alert alert-${type} alert-dismissible" role="alert">`,
-            `   <div>${message}</div>`,
-            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-            '</div>'
-        ].join('');
-
-        alertPlaceHolder.append(wrapper);
-    }
-
     async function deleteSurvey(surveyId) {
         try {
             const response = await fetch(`<?= base_url('/api/surveys/') ?>${surveyId}`, {
