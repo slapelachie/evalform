@@ -118,19 +118,15 @@
             });
 
             if (!response.ok) {
-                console.error(await response.json());
+                const errorResponse = await response.json();
+                console.error(`API request failed with status ${response.status}: ${response.statusText}\n`, errorResponse);
                 throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
             }
 
-            try {
-                return await response.json();
-            } catch (error) {
-                throw error;
-            }
+            return await response.json();
         } catch (error) {
             throw error;
         }
-
     }
 
     function getQuestionAnswers(questionContainer) {
@@ -212,9 +208,8 @@
         try {
             var surveyId = await submitSurvey();
         } catch (error) {
-            appendAlert(error.message, 'danger');
+            appendAlert("Something went wrong! Please try again later.", 'danger');
             console.error(error);
-
             saveSurveyButton.disabled = false;
             return;
         }

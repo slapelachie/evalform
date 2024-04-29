@@ -124,7 +124,7 @@ class SurveyController extends ResourceController
                 $this->insertQuestions($data['questions'], $surveyId);
             } catch (\Exception $error) {
                 $this->model->transRollback();
-                return $this->fail($error);
+                return $this->fail($error->getMessage());
             }
         }
 
