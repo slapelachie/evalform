@@ -8,9 +8,11 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'DashboardController::index');
 
 /* Survey Routes */
+$routes->get('surveys', 'SurveyController::index');
+
 $routes->get('surveys/create', 'SurveyController::create');
 
-$routes->get('surveys/(:num)', 'SurveyController::index/$1');
+$routes->get('surveys/(:num)', 'SurveyController::view/$1');
 $routes->get('surveys/(:num)/manage', 'SurveyController::manage/$1');
 $routes->get('surveys/(:num)/edit', 'SurveyController::edit/$1');
 

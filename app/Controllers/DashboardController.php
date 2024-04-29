@@ -32,7 +32,7 @@ class DashboardController extends BaseController
         $survey_response_count = 0;
 
         foreach ($data['surveys'] as $survey) {
-            if($survey['status'] == 'published') {
+            if ($survey['status'] == 'published') {
                 $publish_count++;
             } else {
                 $draft_count++;
@@ -45,18 +45,22 @@ class DashboardController extends BaseController
             'publishes' => [
                 'name' => 'Published Surveys',
                 'value' => $publish_count,
+                'link' => base_url('surveys?status=published'),
             ],
             'drafts' => [
                 'name' => 'Drafted Surveys',
                 'value' => $draft_count,
+                'link' => base_url('surveys?status=draft'),
             ],
             'views' => [
                 'name' => 'Survey Views',
                 'value' => 0,
+                'link' => null,
             ],
             'answers' => [
                 'name' => 'Survey Responses',
                 'value' => $survey_response_count,
+                'link' => null,
             ],
         ];
 

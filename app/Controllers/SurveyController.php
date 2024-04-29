@@ -7,7 +7,12 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class SurveyController extends BaseController
 {
-    public function index($survey_id)
+    public function index()
+    {
+        return view('surveys');
+    }
+
+    public function view($survey_id)
     {
         $surveysModel = new \App\Models\SurveysModel();
         $questionsModel = new \App\Models\QuestionsModel();
