@@ -26,5 +26,5 @@ service('auth')->routes($routes);
 /* API Routes */
 $routes->resource('api/surveys', ['controller' => 'API\SurveyController']);
 $routes->resource('api/questions', ['controller' => 'API\QuestionsController']);
-$routes->resource('api/answers', ['controller' => 'API\QuestionAnswerChoicesController']);
+$routes->resource('api/answers', ['controller' => 'API\AnswersController']);
 $routes->resource('api/responses', ['controller' => 'API\ResponsesController']);

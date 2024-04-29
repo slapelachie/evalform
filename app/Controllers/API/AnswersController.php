@@ -5,9 +5,9 @@ namespace App\Controllers\API;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 
-class QuestionAnswerChoicesController extends ResourceController
+class AnswersController extends ResourceController
 {
-    protected $modelName = 'App\Models\QuestionAnswerChoicesModel';
+    protected $modelName = 'App\Models\AnswersModel';
     protected $format = 'json';
 
     public function index()

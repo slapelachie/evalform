@@ -21,12 +21,12 @@ class SurveyController extends ResourceController
     private function getQuestions($surveyId)
     {
         $questionsModel = new \App\Models\QuestionsModel();
-        $questionAnswerChoicesModel = new \App\Models\QuestionAnswerChoicesModel();
+        $answersModel = new \App\Models\AnswersModel();
 
         $questions = $questionsModel->where('survey_id', $surveyId)->findAll();
 
         foreach ($questions as &$question) {
-            $answers = $questionAnswerChoicesModel->where('question_id', $question['id'])->findAll();
+            $answers = $answersModel->where('question_id', $question['id'])->findAll();
             $question['answers'] = $answers;
         }
         unset($question);
@@ -105,7 +105,7 @@ class SurveyController extends ResourceController
 
     private function insertAnswers($answers, $questionId)
     {
-        $questionAnswerChoicesModel = new \App\Models\QuestionAnswerChoicesModel();
+        $answersModel = new \App\Models\AnswersModel();
 
         foreach ($answers as $answer) {
             $answerData = [
@@ -114,8 +114,8 @@ class SurveyController extends ResourceController
                 'answer' => $answer['answer'],
             ];
 
-            if (!$questionAnswerChoicesModel->insert($answerData)) {
-                $errorMessage = $this->getModelErrorMessage($questionAnswerChoicesModel);
+            if (!$answersModel->insert($answerData)) {
+                $errorMessage = $this->getModelErrorMessage($answersModel);
                 throw new \Exception($errorMessage);
             }
         }

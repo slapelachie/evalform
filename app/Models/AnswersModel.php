@@ -4,7 +4,7 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class QuestionAnswerChoicesModel extends Model
+class AnswersModel extends Model
 {
     protected $table            = 'question_answer_choices';
     protected $primaryKey       = 'id';

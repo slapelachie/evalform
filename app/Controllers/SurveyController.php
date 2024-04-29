@@ -16,7 +16,7 @@ class SurveyController extends BaseController
     {
         $surveysModel = new \App\Models\SurveysModel();
         $questionsModel = new \App\Models\QuestionsModel();
-        $questionAnswerChoicesModel = new \App\Models\QuestionAnswerChoicesModel();
+        $answersModel = new \App\Models\AnswersModel();
 
         $data['survey'] = $surveysModel->find($survey_id);
         if ($data['survey'] == null) {
@@ -26,7 +26,7 @@ class SurveyController extends BaseController
         $data['questions'] = $questionsModel->where('survey_id', $survey_id)->orderBy('question_number', 'ASC')->findAll();
 
         foreach ($data['questions'] as &$question) {
-            $question['choices'] = $questionAnswerChoicesModel->where('question_id', $question['id'])->orderBy('position', 'ASC')->findAll();
+            $question['choices'] = $answersModel->where('question_id', $question['id'])->orderBy('position', 'ASC')->findAll();
         }
         unset($question);
 
@@ -45,7 +45,7 @@ class SurveyController extends BaseController
         // TODO: Need to check permissions
         $surveysModel = new \App\Models\SurveysModel();
         $questionsModel = new \App\Models\QuestionsModel();
-        $questionAnswerChoicesModel = new \App\Models\QuestionAnswerChoicesModel();
+        $answersModel = new \App\Models\AnswersModel();
 
         $questionResponsesModel = new \App\Models\QuestionResponsesModel();
 
@@ -58,7 +58,7 @@ class SurveyController extends BaseController
 
         foreach ($data['questions'] as &$question) {
             $question_id = $question['id'];
-            $question['choices'] = $questionAnswerChoicesModel->where('question_id', $question_id)->orderBy('position', 'ASC')->findAll();
+            $question['choices'] = $answersModel->where('question_id', $question_id)->orderBy('position', 'ASC')->findAll();
 
             $total_response_count = count($questionResponsesModel->where('question_id', $question_id)->findAll());
 

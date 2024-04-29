@@ -4,7 +4,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateQuestionAnswerChoicesTable extends Migration
+class CreateAnswersTable extends Migration
 {
     public function up()
     {
