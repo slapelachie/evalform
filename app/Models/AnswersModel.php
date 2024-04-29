@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class AnswersModel extends Model
 {
-    protected $table            = 'question_answer_choices';
+    protected $table            = 'answers';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
