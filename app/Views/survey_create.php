@@ -215,6 +215,7 @@
         }
 
         // Redirect to successful creation page
+        // TODO: should be from api not hardcoded!
         window.location.href = `<?= base_url('surveys/') ?>${surveyId}/manage`;
     }
 
