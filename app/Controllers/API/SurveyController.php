@@ -36,7 +36,20 @@ class SurveyController extends ResourceController
 
     public function index()
     {
-        $surveys = $this->model->findall();
+        $ownerId = $this->request->getGet('owner_id');
+        $status = $this->request->getGet('status');
+
+        $query = $this->model;
+
+        if ($ownerId !== null) {
+            $query = $query->where("owner_id", $ownerId);
+        }
+
+        if ($status !== null) {
+            $query = $query->where("status", $status);
+        }
+
+        $surveys = $query->findall();
 
         foreach ($surveys as &$survey) {
             $questions = $this->getQuestions($survey['id']);

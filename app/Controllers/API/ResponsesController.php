@@ -27,7 +27,15 @@ class ResponsesController extends ResourceController
 
     public function index()
     {
-        $surveyResponses = $this->model->findall();
+        $survey_id = $this->request->getGet('survey_id');
+
+        $query = $this->model;
+
+        if ($survey_id !== null) {
+            $query = $query->where('survey_id', $survey_id);
+        }
+
+        $surveyResponses = $query->findall();
 
         foreach ($surveyResponses as &$surveyResponse) {
             $responses = $this->getResponses($surveyResponse['id']);
