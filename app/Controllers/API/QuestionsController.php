@@ -12,7 +12,17 @@ class QuestionsController extends ResourceController
 
     public function index()
     {
-        return $this->respond($this->model->findAll());
+        $survey_id = $this->request->getGet('survey_id');
+
+        $query = $this->model;
+
+        if ($survey_id !== null) {
+            $query = $query->where('survey_id', $survey_id);
+        }
+
+        $questions = $query->findall();
+
+        return $this->respond($questions);
     }
 
     public function show($id = null)
