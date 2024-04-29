@@ -10,7 +10,7 @@ class SurveysModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $allowedFields    = ['name', 'description', 'owner_id', 'business_id', 'status'];
+    protected $allowedFields    = ['name', 'description', 'owner_id', 'status'];
 
     protected $useTimestamps = false;
 
@@ -18,7 +18,6 @@ class SurveysModel extends Model
         'name' => 'required|string|max_length[256]',
         'description' => 'required|string',
         'owner_id' => 'required|integer',
-        'business_id' => 'permit_empty|integer',
         'status' => 'permit_empty|string|in_list[draft,published]'
     ];
 

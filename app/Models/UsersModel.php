@@ -11,15 +11,5 @@ class UsersModel extends ShieldUserModel
     protected function initialize(): void
     {
         parent::initialize();
-
-        $this->allowedFields = [
-            ...$this->allowedFields,
-            'business_id',
-        ];
-
-        $this->validationRules = [
-            ...$this->validationRules,
-            'business_id' => 'permit_empty|integer',
-        ];
     }
 }
