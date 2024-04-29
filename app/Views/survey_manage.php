@@ -15,7 +15,7 @@
             <p class="text-muted"><?= $survey['description'] ?></p>
             <h2 class="mb-2 display-6">Analytics</h2>
         </div>
-        <div class="container mb-3">
+        <div class="my-3">
             <div class="row">
                 <div class="col-md mb-1">
                     <select id="dateRange" class="form-select">
@@ -46,7 +46,7 @@
                 </div>
             </div>
         </div>
-        <div class="container mb-3">
+        <div class="my-3">
             <div id="accordionQuestions" class="accordion mb-3">
                 <?php foreach ($questions as $question) : ?>
                     <div class="accordion-item">
@@ -103,7 +103,8 @@
             </div>
             <?php if ($survey['status'] == 'draft') : ?>
                 <div class="mb-3 d-grid">
-                    <button id="publish_survey" type="button" class="btn btn-primary">Publish Survey</button>
+                    <div id="alert"></div>
+                    <button id="publishSurveyButton" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#publishSurveyModal">Publish Survey</button>
                 </div>
             <?php endif ?>
         </div>
@@ -114,10 +115,11 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteSurveyLabel">Delete Survey "<?= $survey['name']; ?>"</h5>
+                <h5 class="modal-title" id="deleteSurveyLabel">Delete Survey "<?= $survey['name']; ?>"?</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body d-grid gap-3">
+                <p>This cannot be undone!</p>
                 <button id="confirmSurveyDeleteButton" type="button" class="btn btn-outline-danger" data-bs-dismiss="modal" onclick="deleteSurvey()">Yes, delete this survey.</button>
             </div>
             <div class="modal-footer">
@@ -127,7 +129,55 @@
     </div>
 </div>
 
+<div class="modal fade" id="publishSurveyModal" tabindex="-1" aria-labelledby="publishSurveyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="publishSurveyLabel">Publish Survey "<?= $survey['name']; ?>"?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-grid gap-3">
+                <p>This cannot be undone!</p>
+                <button id="confirmSurveyPublishButton" type="button" class="btn btn-outline-danger" data-bs-dismiss="modal" onclick="publishSurvey()">Yes, publish this survey.</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    async function publishSurvey() {
+        try {
+            surveyData = {
+                "status": "published",
+            }
+
+            const response = await fetch('<?= base_url('/api/surveys/') . $survey['id'] ?>', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(surveyData),
+            });
+
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+            }
+
+            try {
+                await response.json();
+            } catch (error) {
+                throw error;
+            }
+        } catch (error) {
+            appendAlert("Failed to publish this survey! Please try again later.", "danger");
+            console.error(error);
+            return;
+        }
+    }
+
     async function deleteSurvey() {
         try {
             const response = await fetch('<?= base_url('/api/surveys/') . $survey['id'] ?>', {
@@ -144,8 +194,8 @@
                 throw error;
             }
         } catch (error) {
-            // TODO show flash message
-            console.log(error);
+            appendAlert("Failed to delete this survey! Please try again later.", "danger");
+            console.error(error);
             return;
         }
 
