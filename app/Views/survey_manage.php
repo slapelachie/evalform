@@ -15,91 +15,32 @@
             <p class="text-muted"><?= $survey['description'] ?></p>
             <h2 class="mb-2 display-6">Analytics</h2>
         </div>
-        <div class="my-3">
-            <div class="row">
-                <div class="col-md mb-1">
-                    <select id="dateRange" class="form-select">
-                        <option selected>Date Range</option>
-                        <option value="previousWeek">Previous Week</option>
-                        <option value="previousMonth">Previous Month</option>
-                        <option value="previousYear">Previous Year</option>
-                        <option value="custom">Custom</option>
-                    </select>
-                </div>
-                <div class="col-md mb-1">
-                    <select id="questionType" class="form-select">
-                        <option selected>Type</option>
-                        <option value="multipleChoice">Multiple Choice</option>
-                        <option value="freeText">Free Text</option>
-                    </select>
-                </div>
-                <div class="col-md mb-1">
-                    <select id="questionSentiment" class="form-select">
-                        <option selected>Sentiment</option>
-                        <option value="negative">Negative</option>
-                        <option value="neutral">Neutral</option>
-                        <option value="Positive">Positive</option>
-                    </select>
-                </div>
-                <div class="col-md-auto ms-auto">
-                    <button class="btn btn-primary w-100 w-md-auto">Apply Filters</button>
+        <div id="surveyFilters" class="row align-items-end my-3">
+            <div class="col-md-3">
+                <label for="startDateFilter" class="form-label">From:</label>
+                <input type="date" class="form-control" id="startDateFilter">
+            </div>
+            <div class="col-md-3">
+                <label for="endDateFilter" class="form-label">To:</label>
+                <input type="date" class="form-control" id="endDateFilter">
+            </div>
+            <div class="col-md">
+                <label for="questionTypeFilter" class="form-label">Question Type:</label>
+                <select id="questionTypeFilter" class="form-select">
+                    <option value="" selected></option>
+                    <option value="multipleChoice">Multiple Choice</option>
+                    <option value="freeText">Free Text</option>
+                </select>
+            </div>
+            <div class="col-md-auto">
+                <div class="col-md">
+                    <button type="button" class="btn btn-outline-danger me-2" onclick="resetFilters()">Reset Filters</button>
+                    <button type="button" class="btn btn-primary" onclick="">Apply Filters</button>
                 </div>
             </div>
         </div>
         <div class="my-3">
-            <div id="accordionQuestions" class="accordion mb-3">
-                <?php foreach ($questions as $question) : ?>
-                    <div class="accordion-item">
-                        <h2 id="questionHeader<?= $question['question_number'] ?>" class="accordion-header">
-                            <button class="accordion-button collapsed " type="button" data-bs-toggle="collapse" data-bs-target="#questionBody<?= $question['question_number'] ?>" aria-expanded="false" aria-controls="questionBody<?= $question['question_number'] ?>">
-                                Question <?= $question['question_number'] ?>: <?= $question['question'] ?>
-                            </button>
-                        </h2>
-                        <div id="questionBody<?= $question['question_number'] ?>" class="accordion-collapse collapse" aria-labelledby="questionHeader<?= $question['question_number'] ?>" data-bs-parent="#accordionQuestions">
-                            <div class="accordion-body">
-                                <?php if ($question['type'] == 'multiple_choice') { ?>
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Answer</th>
-                                                <th>Responses</th>
-                                                <th>Response Rate</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($question['choices'] as $choice) : ?>
-                                                <tr>
-                                                    <td><?= $choice['answer'] ?></td>
-                                                    <td><?= $responses[$choice['id']]['count'] ?></td>
-                                                    <td class=""><i class="bi bi-dash"></i> <?= $responses[$choice['id']]['percent'] ?>%</td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                <?php } else { ?>
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Responses</th>
-                                                <th>Sentiment</th>
-                                                <th>Keywords</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>123</td>
-                                                <td class="text-danger"><i class="bi bi-x"></i> Negative</td>
-                                                <td>Lorem, Ipsum, Dolor</td>
-                                                <td><button class="btn btn-primary btn-sm">Review</button></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                <?php } ?>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+            <div id="accordionQuestionsContainer" class="accordion mb-3">
             </div>
             <?php if ($survey['status'] == 'draft') : ?>
                 <div class="mb-3 d-grid">
@@ -147,7 +88,91 @@
     </div>
 </div>
 
+<template id="questionAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed " type="button" data-bs-toggle="collapse" aria-expanded="false">
+                <!-- Question 123: Foo bar -->
+            </button>
+        </h2>
+        <div class="accordion-collapse collapse" data-bs-parent="#accordionQuestionsContainer">
+            <div class="accordion-body">
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="multipleChoiceAccordion">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Answer</th>
+                <th>Responses</th>
+                <th>Response Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</template>
+
+<template id="multipleChoiceAnswerRow">
+    <tr>
+        <td class="mc-answer"></td>
+        <td class="mc-response-count"></td>
+        <td class="mc-response-percent"></td>
+    </tr>
+</template>
+
+<template id="freetextAccordion">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Responses</th>
+                <th>Sentiment</th>
+                <th>Keywords</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>123</td>
+                <td class="text-danger"><i class="bi bi-x"></i> Negative</td>
+                <td>Lorem, Ipsum, Dolor</td>
+                <td><button class="btn btn-primary btn-sm">Review</button></td>
+            </tr>
+        </tbody>
+    </table>
+</template>
+
 <script>
+    function resetFilters() {
+        // Reset date inputs
+        document.getElementById('startDateFilter').value = '';
+        document.getElementById('endDateFilter').value = '';
+
+        // Reset type filter to first option
+        document.getElementById('questionTypeFilter').selectedIndex = 0;
+    }
+
+    async function getQuestions() {
+        try {
+            const response = await fetch('<?= base_url('/api/questions?survey_id=') . $survey['id'] ?>', {
+                method: 'GET',
+            });
+
+            if (!response.ok) {
+                const errorResponse = await response.json();
+                console.error(`API request failed with status ${response.status}: ${response.statusText}\n`, errorResponse);
+                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async function publishSurvey() {
         try {
             surveyData = {
@@ -203,6 +228,55 @@
         window.location.href = '<?= base_url('/') ?>';
         return;
     }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const accordionQuestionsContainer = document.getElementById("accordionQuestionsContainer");
+
+        try {
+            var questions = await getQuestions();
+        } catch (error) {
+            appendAlert("Something went wrong! Please try again later.", 'danger');
+            console.error(error);
+            return;
+        }
+
+        for (let question of questions) {
+            const questionAccodionTemplate = document.getElementById("questionAccordion");
+            const newQuestionAccordion = questionAccodionTemplate.content.cloneNode(true);
+
+            accordionHeader = newQuestionAccordion.querySelector('.accordion-header');
+            accordionHeader.id = `questionHeader${question['id']}`;
+
+            accordionHeaderButton = accordionHeader.querySelector('button');
+            accordionHeaderButton.dataset.bsTarget = `#questionBody${question['id']}`;
+            accordionHeaderButton.setAttribute('aria-controls', `questionBody${question['id']}`);
+            accordionHeaderButton.innerHTML = `Question ${question['question_number']}: ${question['question']}`;
+
+            accordionCollapse = newQuestionAccordion.querySelector('.accordion-collapse');
+            accordionCollapse.id = `questionBody${question['id']}`;
+            accordionCollapse.setAttribute('aria-labelledby', `questionHeader${question['id']}`);
+
+            accordionBody = newQuestionAccordion.querySelector('.accordion-body');
+
+            if (question["type"] == "multiple_choice") {
+                const multipleChoiceQuestionTemplate = document.getElementById("multipleChoiceAccordion");
+                const multipleChoiceAccordion = multipleChoiceQuestionTemplate.content.cloneNode(true);
+
+                accordionBody.append(multipleChoiceAccordion);
+
+                const tableBody = multipleChoiceAccordion.querySelector('tbody');
+
+                const tableRowTemplate = document.getElementById("multipleChoiceAnswerRow");
+                const tableRow = tableRowTemplate.content.cloneNode(true);
+
+                tableRow.querySelector('.mc-answer').innerHTML = ``;
+            } else if (question["type"] == "free_text") {
+                // TODO
+            }
+
+            accordionQuestionsContainer.append(newQuestionAccordion);
+        }
+    })
 </script>
 
 <?= $this->endSection() ?>
