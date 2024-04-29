@@ -28,3 +28,4 @@ $routes->resource('api/surveys', ['controller' => 'API\SurveyController']);
 $routes->resource('api/questions', ['controller' => 'API\QuestionsController']);
 $routes->resource('api/answers', ['controller' => 'API\AnswersController']);
 $routes->resource('api/responses', ['controller' => 'API\ResponsesController']);
+$routes->resource('api/question-responses', ['controller' => 'API\QuestionResponsesController']);
