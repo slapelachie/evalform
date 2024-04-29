@@ -12,7 +12,17 @@ class AnswersController extends ResourceController
 
     public function index()
     {
-        return $this->respond($this->model->findAll());
+        $questionId = $this->request->getGet('question_id');
+
+        $query = $this->model;
+
+        if ($questionId !== null) {
+            $query = $query->where('question_id', $questionId);
+        }
+
+        $answers = $query->findall();
+
+        return $this->respond($answers);
     }
 
     public function show($id = null)
