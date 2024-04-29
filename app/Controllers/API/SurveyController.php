@@ -11,6 +11,13 @@ class SurveyController extends ResourceController
     protected $modelName = 'App\Models\SurveysModel';
     protected $format = 'json';
 
+    private function getModelErrorMessage($model)
+    {
+        $errors = $model->errors();
+        $errorMessage = is_array($errors) ? implode('; ', $errors) : $errors;
+        return $errorMessage;
+    }
+
     private function getQuestions($surveyId)
     {
         $questionsModel = new \App\Models\QuestionsModel();
@@ -66,9 +73,7 @@ class SurveyController extends ResourceController
 
             // Insert questions
             if (!$questionsModel->insert($questionData)) {
-                $errors = $questionsModel->errors();
-                $errorMessage = is_array($errors) ? implode('; ', $errors) : $errors;
-
+                $errorMessage = $this->getModelErrorMessage($questionsModel);
                 throw new \Exception($errorMessage);
             }
 
@@ -97,9 +102,7 @@ class SurveyController extends ResourceController
             ];
 
             if (!$questionAnswerChoicesModel->insert($answerData)) {
-                $errors = $questionAnswerChoicesModel->errors();
-                $errorMessage = is_array($errors) ? implode('; ', $errors) : $errors;
-
+                $errorMessage = $this->getModelErrorMessage($questionAnswerChoicesModel);
                 throw new \Exception($errorMessage);
             }
         }
@@ -113,7 +116,8 @@ class SurveyController extends ResourceController
 
         if (!$this->model->insert($data)) {
             $this->model->transRollback();
-            return $this->fail($this->model->errors());
+            $errorMessage = $this->getModelErrorMessage($this->model);
+            return $this->fail($errorMessage);
         }
 
         $surveyId = $this->model->getInsertID();
@@ -139,6 +143,7 @@ class SurveyController extends ResourceController
 
     public function update($id = null)
     {
+        // TODO
         $survey = $this->model->find($id);
         if ($survey == null) {
             return $this->failNotFound('Survey not found with id: ' . $id);

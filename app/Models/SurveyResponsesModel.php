@@ -10,7 +10,7 @@ class SurveyResponsesModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $allowedFields    = ['survey_id', 'submit_time'];
+    protected $allowedFields    = ['survey_id'];
 
     // Dates
     protected $useTimestamps = true;
