@@ -43,8 +43,8 @@ class AnswersController extends ResourceController
             return $this->fail($this->model->errors());
         }
 
-        $answer_id = $this->model->getInsertID();
-        $answer = $this->model->find($answer_id);
+        $answerId = $this->model->getInsertID();
+        $answer = $this->model->find($answerId);
 
         return $this->respondCreated($answer);
     }
@@ -59,8 +59,8 @@ class AnswersController extends ResourceController
         $data = $this->request->getJSON(true);
 
         if ($this->model->update($id, $data)) {
-            $updated_answer = $this->model->find($id);
-            return $this->respondUpdated($updated_answer);
+            $updatedAnswer = $this->model->find($id);
+            return $this->respondUpdated($updatedAnswer);
         }
         return $this->failServerError('Could not update the answer');
     }

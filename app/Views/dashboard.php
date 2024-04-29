@@ -3,7 +3,7 @@
 
 <section class="py-3">
     <div class="container">
-        <h1 class="display-5 mb-3">Manage <?= (esc($business_name) ?? 'Your') . (!empty($business_name) ? '\'s' : '') ?> Surveys</h1>
+        <h1 class="display-5 mb-3">Manage Your Surveys</h1>
         <div class="container d-flex flex-row mb-4">
             <div class="row flex-nowrap overflow-auto">
                 <div class="col pe-1 my-2">

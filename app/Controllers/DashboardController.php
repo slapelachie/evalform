@@ -6,50 +6,38 @@ class DashboardController extends BaseController
 {
     public function index(): string
     {
-        $userModel = new \App\Models\UsersModel();
-        $businessModel = new \App\Models\BusinessesModel();
         $surveyModel = new \App\Models\SurveysModel();
         $surveyResponsesModel = new \App\Models\SurveyResponsesModel();
 
-        $user_id = auth()->user()->id;
-        $user_data = $userModel->find($user_id);
-
-        // TODO: Add logic between business and personal
-        $data['business_name'] = '';
-
-        $business_id = $user_data->business_id;
-        if ($business_id != null) {
-            $business_data = $businessModel->find($business_id);
-            $data['business_name'] = $business_data['name'];
-        }
+        $userId = auth()->user()->id;
 
         // TODO: Get list of surveys
-        $data['surveys'] = $surveyModel->where('owner_id', $user_id)->findAll();
+        $data['surveys'] = $surveyModel->where('owner_id', $userId)->findAll();
 
         // TODO: Get insights
-        $publish_count = 0;
-        $draft_count = 0;
-        $survey_response_count = 0;
+        $publishCount = 0;
+        $draftCount = 0;
+        $surveyResponseCount = 0;
 
         foreach ($data['surveys'] as $survey) {
             if ($survey['status'] == 'published') {
-                $publish_count++;
+                $publishCount++;
             } else {
-                $draft_count++;
+                $draftCount++;
             }
 
-            $survey_response_count += count($surveyResponsesModel->where('survey_id', $survey['id'])->findAll());
+            $surveyResponseCount += count($surveyResponsesModel->where('survey_id', $survey['id'])->findAll());
         }
 
         $data['insights'] = [
             'publishes' => [
                 'name' => 'Published Surveys',
-                'value' => $publish_count,
+                'value' => $publishCount,
                 'link' => base_url('surveys?status=published'),
             ],
             'drafts' => [
                 'name' => 'Drafted Surveys',
-                'value' => $draft_count,
+                'value' => $draftCount,
                 'link' => base_url('surveys?status=draft'),
             ],
             'views' => [
@@ -59,7 +47,7 @@ class DashboardController extends BaseController
             ],
             'answers' => [
                 'name' => 'Survey Responses',
-                'value' => $survey_response_count,
+                'value' => $surveyResponseCount,
                 'link' => null,
             ],
         ];

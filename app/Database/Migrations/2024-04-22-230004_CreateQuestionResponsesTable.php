@@ -41,7 +41,7 @@ class CreateQuestionResponsesTable extends Migration
 
         $this->forge->addForeignKey('survey_response_id', 'survey_responses', 'id', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('question_id', 'questions', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('answer_id', 'question_answer_choices', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('answer_id', 'answers', 'id', 'CASCADE', 'CASCADE');
 
         $this->forge->createtable('question_responses');
     }

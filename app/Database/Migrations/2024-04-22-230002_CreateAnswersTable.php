@@ -4,7 +4,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateAnswersTable extends Migration
+class CreateAnswerTable extends Migration
 {
     public function up()
     {
@@ -36,11 +36,11 @@ class CreateAnswersTable extends Migration
 
         $this->forge->addForeignKey('question_id', 'questions', 'id', 'CASCADE', 'CASCADE');
 
-        $this->forge->createtable('question_answer_choices');
+        $this->forge->createtable('answers');
     }
 
     public function down()
     {
-        $this->forge->dropTable('question_answer_choices');
+        $this->forge->dropTable('answers');
     }
 }

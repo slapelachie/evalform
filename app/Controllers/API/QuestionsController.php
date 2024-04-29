@@ -12,12 +12,12 @@ class QuestionsController extends ResourceController
 
     public function index()
     {
-        $survey_id = $this->request->getGet('survey_id');
+        $surveyId = $this->request->getGet('survey_id');
 
         $query = $this->model;
 
-        if ($survey_id !== null) {
-            $query = $query->where('survey_id', $survey_id);
+        if ($surveyId !== null) {
+            $query = $query->where('survey_id', $surveyId);
         }
 
         $questions = $query->findall();
@@ -43,8 +43,8 @@ class QuestionsController extends ResourceController
             return $this->fail($this->model->errors());
         }
 
-        $question_id = $this->model->getInsertID();
-        $question = $this->model->find($question_id);
+        $questionId = $this->model->getInsertID();
+        $question = $this->model->find($questionId);
 
         return $this->respondCreated($question);
     }
@@ -59,8 +59,8 @@ class QuestionsController extends ResourceController
         $data = $this->request->getJSON(true);
 
         if ($this->model->update($id, $data)) {
-            $updated_question = $this->model->find($id);
-            return $this->respondUpdated($updated_question);
+            $updatedQuestion = $this->model->find($id);
+            return $this->respondUpdated($updatedQuestion);
         }
         return $this->failServerError('Could not update the question');
     }
