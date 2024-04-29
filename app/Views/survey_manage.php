@@ -7,9 +7,9 @@
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h1 class="display-5 mb-2">Manage <?= $survey['name'] ?></h1>
                 <div class="align-items-center ">
-                    <a href="/surveys/<?= $survey["id"] ?>"><button type="button" class="btn btn-primary btn-sm">View <i class="bi bi-eye"></i></button></a>
-                    <a href="/surveys/<?= $survey["id"] ?>/edit"><button type="button" class="btn btn-warning btn-sm">Edit <i class="bi bi-pencil"></i></button></a>
-                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteSurveyModal">Delete <i class="bi bi-trash"></i></button>
+                    <a href="/surveys/<?= $survey["id"] ?>"><button type="button" class="btn btn-primary btn-sm">View</button></a>
+                    <a href="/surveys/<?= $survey["id"] ?>/edit"><button type="button" class="btn btn-warning btn-sm">Edit</button></a>
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteSurveyModal">Delete</button>
                 </div>
             </div>
             <p class="text-muted"><?= $survey['description'] ?></p>
