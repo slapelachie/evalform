@@ -8,6 +8,20 @@
             <button class="btn btn-outline-primary" type="button" onclick="refreshSurveys()">Refresh</button>
         </div>
         <div id="errorSurveyFetchAlert"></div>
+        <div class="my-3">
+            <div class="row">
+                <div class="col-md mb-1">
+                    <select id="surveyStatusFilter" class="form-select">
+                        <option value="status" selected>Status</option>
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
+                    </select>
+                </div>
+                <div class="col-md-auto ms-auto">
+                    <button type="button" class="btn btn-primary w-100 w-md-auto" onclick="presentSurveys()">Apply Filters</button>
+                </div>
+            </div>
+        </div>
         <table id="surveyTable" class="table table-striped">
             <thead>
                 <tr>
@@ -108,8 +122,12 @@
         }
     }
 
-    async function getSurveys() {
+    async function getSurveys(surveyStatus = null) {
         apiUrl = `<?= base_url('/api/surveys?owner_id=') . auth()->user()->id ?>`;
+
+        if (surveyStatus != null) {
+            apiUrl += `&status=${surveyStatus}`;
+        }
 
         try {
             return await makeAPICall(apiUrl)
@@ -130,35 +148,44 @@
         return responses.length;
     }
 
+    async function generateSurveyRow(survey) {
+        const template = document.getElementById("surveyRowTemplate");
+        const newSurvey = template.content.cloneNode(true);
+
+        const surveyResponseCount = await getSurveyResponseCount(survey["id"]);
+        newSurvey.querySelector(".survey-name").textContent = survey['name'];
+        newSurvey.querySelector(".survey-responses").textContent = surveyResponseCount;
+        newSurvey.querySelector(".manage-button").href = `<?= base_url('surveys') ?>/${survey["id"]}/manage`;
+
+        const deleteButton = newSurvey.querySelector(".delete-button");
+        deleteButton.dataset.surveyId = survey["id"];
+        deleteButton.dataset.surveyName = survey["name"];
+
+        return newSurvey;
+    }
+
     async function presentSurveys() {
         const surveyTable = document.getElementById("surveyTable");
         const surveyTableBody = surveyTable.querySelector("tbody");
 
-        surveyTableBody.innerHTML = "";
-
-        const template = document.getElementById("surveyRowTemplate");
+        const surveyStatusFilter = document.getElementById('surveyStatusFilter')
+        const surveyStatusValue = surveyStatusFilter.value != "status" ? surveyStatusFilter.value : null;
 
         try {
-            var surveys = await getSurveys();
+            var surveys = await getSurveys(surveyStatusValue);
         } catch (error) {
             appendAlert("Something went wrong! Please try again later.", 'danger');
             console.error(error);
             return;
         }
 
+        // Clear current surveys if they are already presented
+        surveyTableBody.innerHTML = "";
+
+        // Append each survey to the table
         for (const survey of surveys) {
-            const newSurvey = template.content.cloneNode(true);
-
-            const surveyResponseCount = await getSurveyResponseCount(survey["id"]);
-            newSurvey.querySelector(".survey-name").textContent = survey['name'];
-            newSurvey.querySelector(".survey-responses").textContent = surveyResponseCount;
-            newSurvey.querySelector(".manage-button").href = `<?= base_url('surveys') ?>/${survey["id"]}/manage`;
-
-            const deleteButton = newSurvey.querySelector(".delete-button");
-            deleteButton.dataset.surveyId = survey["id"];
-            deleteButton.dataset.surveyName = survey["name"];
-
-            surveyTableBody.appendChild(newSurvey);
+            surveyRow = await generateSurveyRow(survey);
+            surveyTableBody.appendChild(surveyRow);
         }
     }
 
