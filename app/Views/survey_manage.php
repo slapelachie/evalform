@@ -186,7 +186,7 @@
         const publishSurveyButton = document.getElementById("publishSurveyButton");
 
         publishSurveyButton.disabled = true;
-        
+
         try {
             surveyData = {
                 "status": "published",
@@ -264,11 +264,24 @@
         }
     }
 
-    async function getQuestionResponseCount(questionId, answerId = null) {
+    async function getQuestionResponseCount({
+        questionId,
+        answerId = null,
+        startDateUnix = null,
+        endDateUnix = null
+    }) {
         let apiUrl = `<?= base_url('/api/question-responses') ?>?question_id=${questionId}&count`;
 
         if (answerId !== null) {
             apiUrl += `&answer_id=${answerId}`;
+        }
+
+        if (startDateUnix !== null) {
+            apiUrl += `&start_date=${startDateUnix}`;
+        }
+
+        if (endDateUnix !== null) {
+            apiUrl += `&end_date=${endDateUnix}`;
         }
 
         try {
@@ -289,16 +302,25 @@
         }
     }
 
-    async function refreshCounts() {
+    async function refreshCounts(startDateUnix = null, endDateUnix = null) {
         const questionItems = document.querySelectorAll('.question-item');
         for (let questionItem of questionItems) {
             const questionId = questionItem.dataset.questionId;
-            const questionResponseCount = await getQuestionResponseCount(questionId);
+            const questionResponseCount = await getQuestionResponseCount({
+                questionId: questionId,
+                startDateUnix: startDateUnix,
+                endDateUnix: endDateUnix
+            });
 
             const answerRows = questionItem.querySelectorAll('.answer-row');
             for (let answerRow of answerRows) {
                 const answerId = answerRow.dataset.answerId;
-                const answerResponseCount = await getQuestionResponseCount(questionId, answerId);
+                const answerResponseCount = await getQuestionResponseCount({
+                    questionId: questionId,
+                    answerId: answerId,
+                    startDateUnix: startDateUnix,
+                    endDateUnix: endDateUnix
+                });
 
                 answerRow.querySelector('.mc-response-count').innerHTML = answerResponseCount;
 
@@ -367,7 +389,7 @@
         accordionQuestionsContainer.append(newQuestionAccordion);
     }
 
-    async function setupAccordion(questionType = null) {
+    async function setupAccordion(questionType = null, startDateUnix = null, endDateUnix = null) {
         const accordionQuestionsContainer = document.getElementById("accordionQuestionsContainer");
         accordionQuestionsContainer.innerHTML = '';
 
@@ -383,14 +405,35 @@
             await setupQuestions(question);
         }
 
-        refreshCounts();
+        refreshCounts(startDateUnix, endDateUnix);
+    }
+
+    function convertToUnixTime(date) {
+        return Math.floor(date / 1000)
+    }
+
+    function getUTCDayStartUnix(dateStr) {
+        const localDate = new Date(dateStr)
+        const utcTime = new Date(localDate.getUTCFullYear(), localDate.getUTCMonth(), localDate.getUTCDate(), 0, 0, 0, 0);
+        return convertToUnixTime(utcTime.getTime());
+    }
+
+    function getUTCDayEndUnix(dateStr) {
+        const localDate = new Date(dateStr)
+        const utcTime = new Date(localDate.getUTCFullYear(), localDate.getUTCMonth(), localDate.getUTCDate(), 23, 59, 59, 999);
+        return convertToUnixTime(utcTime.getTime());
     }
 
     async function applyFilters() {
-        const questionType = document.getElementById("questionTypeFilter");
-        const questionTypeValue = questionType.value != "" ? questionType.value : null;
+        const questionTypeFilter = document.getElementById("questionTypeFilter");
+        const startDateFilter = document.getElementById("startDateFilter");
+        const endDateFilter = document.getElementById("endDateFilter");
 
-        setupAccordion(questionTypeValue);
+        const questionTypeValue = questionTypeFilter.value !== "" ? questionTypeFilter.value : null;
+        const startDateUnix = !isNaN(startDateFilter.valueAsNumber) ? getUTCDayStartUnix(startDateFilter.value) : null;
+        const endDateUnix = !isNaN(endDateFilter.valueAsNumber) ? getUTCDayEndUnix(endDateFilter.value) : null;
+
+        setupAccordion(questionTypeValue, startDateUnix, endDateUnix);
     }
 
     document.addEventListener('DOMContentLoaded', async function() {
