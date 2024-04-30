@@ -298,7 +298,62 @@
 
     }
 
-    document.addEventListener('DOMContentLoaded', async function() {
+    function setQuestionAttributes(questionAccordion, question) {
+        questionItem = questionAccordion.querySelector('.question-item');
+        questionItem.dataset.questionId = question["id"]
+
+        accordionHeader = questionAccordion.querySelector('.accordion-header');
+        accordionHeader.id = `questionHeader${question['id']}`;
+
+        accordionHeaderButton = accordionHeader.querySelector('button');
+        accordionHeaderButton.dataset.bsTarget = `#questionBody${question['id']}`;
+        accordionHeaderButton.setAttribute('aria-controls', `questionBody${question['id']}`);
+        accordionHeaderButton.innerHTML = `Question ${question['question_number']}: ${question['question']}`;
+
+        accordionCollapse = questionAccordion.querySelector('.accordion-collapse');
+        accordionCollapse.id = `questionBody${question['id']}`;
+        accordionCollapse.setAttribute('aria-labelledby', `questionHeader${question['id']}`);
+
+    }
+
+    async function setupMultipleChoiceQuestion(accordionBody, questionId) {
+        const multipleChoiceQuestionTemplate = document.getElementById("multipleChoiceAccordion");
+        const multipleChoiceAccordion = multipleChoiceQuestionTemplate.content.cloneNode(true);
+
+        accordionBody.append(multipleChoiceAccordion);
+        const tableBody = accordionBody.querySelector('tbody');
+
+        const answers = await getAnswers(questionId);
+        for (let answer of answers) {
+            const tableRowTemplate = document.getElementById("multipleChoiceAnswerRow");
+            const tableRow = tableRowTemplate.content.cloneNode(true);
+
+            const answerRow = tableRow.querySelector('.answer-row');
+            answerRow.dataset.answerId = answer["id"];
+            answerRow.querySelector('.mc-answer').innerHTML = `${answer['answer']}`;
+
+            tableBody.append(tableRow)
+        }
+    }
+
+    async function setupQuestions(question) {
+        const questionAccodionTemplate = document.getElementById("questionAccordion");
+        const newQuestionAccordion = questionAccodionTemplate.content.cloneNode(true);
+
+        setQuestionAttributes(newQuestionAccordion, question);
+
+        accordionBody = newQuestionAccordion.querySelector('.accordion-body');
+
+        if (question["type"] == "multiple_choice") {
+            await setupMultipleChoiceQuestion(accordionBody, question["id"]);
+        } else if (question["type"] == "free_text") {
+            // TODO
+        }
+
+        accordionQuestionsContainer.append(newQuestionAccordion);
+    }
+
+    async function setupAccordion() {
         const accordionQuestionsContainer = document.getElementById("accordionQuestionsContainer");
 
         try {
@@ -310,53 +365,15 @@
         }
 
         for (let question of questions) {
-            const questionAccodionTemplate = document.getElementById("questionAccordion");
-            const newQuestionAccordion = questionAccodionTemplate.content.cloneNode(true);
-
-            questionItem = newQuestionAccordion.querySelector('.question-item');
-            questionItem.dataset.questionId = question["id"]
-
-            accordionHeader = newQuestionAccordion.querySelector('.accordion-header');
-            accordionHeader.id = `questionHeader${question['id']}`;
-
-            accordionHeaderButton = accordionHeader.querySelector('button');
-            accordionHeaderButton.dataset.bsTarget = `#questionBody${question['id']}`;
-            accordionHeaderButton.setAttribute('aria-controls', `questionBody${question['id']}`);
-            accordionHeaderButton.innerHTML = `Question ${question['question_number']}: ${question['question']}`;
-
-            accordionCollapse = newQuestionAccordion.querySelector('.accordion-collapse');
-            accordionCollapse.id = `questionBody${question['id']}`;
-            accordionCollapse.setAttribute('aria-labelledby', `questionHeader${question['id']}`);
-
-            accordionBody = newQuestionAccordion.querySelector('.accordion-body');
-
-            if (question["type"] == "multiple_choice") {
-                const multipleChoiceQuestionTemplate = document.getElementById("multipleChoiceAccordion");
-                const multipleChoiceAccordion = multipleChoiceQuestionTemplate.content.cloneNode(true);
-
-                accordionBody.append(multipleChoiceAccordion);
-                const tableBody = accordionBody.querySelector('tbody');
-
-                const answers = await getAnswers(question['id']);
-                for (let answer of answers) {
-                    const tableRowTemplate = document.getElementById("multipleChoiceAnswerRow");
-                    const tableRow = tableRowTemplate.content.cloneNode(true);
-
-                    const answerRow = tableRow.querySelector('.answer-row');
-                    answerRow.dataset.answerId = answer["id"];
-                    answerRow.querySelector('.mc-answer').innerHTML = `${answer['answer']}`;
-
-                    tableBody.append(tableRow)
-                }
-
-            } else if (question["type"] == "free_text") {
-                // TODO
-            }
-
-            accordionQuestionsContainer.append(newQuestionAccordion);
+            await setupQuestions(question);
         }
 
         refreshCounts();
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        await setupAccordion();
+
     })
 </script>
 
