@@ -9,10 +9,11 @@
         </div>
         <div id="alert"></div>
         <div class="my-3">
-            <div class="row">
-                <div class="col-md mb-1">
+            <div class="row align-items-end my-3">
+                <div class="col-md">
+                    <label for="questionTypeFilter" class="form-label">Question Type:</label>
                     <select id="surveyStatusFilter" class="form-select">
-                        <option value="status" selected>Status</option>
+                        <option value="any" selected>Any</option>
                         <option value="draft">Draft</option>
                         <option value="published">Published</option>
                     </select>
@@ -155,7 +156,7 @@
         const surveyTableBody = surveyTable.querySelector("tbody");
 
         const surveyStatusFilter = document.getElementById('surveyStatusFilter')
-        const surveyStatusValue = surveyStatusFilter.value != "status" ? surveyStatusFilter.value : null;
+        const surveyStatusValue = surveyStatusFilter.value != "any" ? surveyStatusFilter.value : null;
 
         try {
             var surveys = await getSurveys(surveyStatusValue);
@@ -180,8 +181,20 @@
     }
 
     document.addEventListener('DOMContentLoaded', async function() {
+        // Get the query params
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+
+        // Apply any filters
+        if (status) {
+            const surveyStatusFilter = document.getElementById("surveyStatusFilter");
+            surveyStatusFilter.value = status;
+        }
+
+        // Display survey list
         await presentSurveys();
 
+        // Setup buttons
         const surveyTable = document.getElementById("surveyTable");
         const deleteModal = document.getElementById("deleteSurveyModal");
         const deleteButton = document.getElementById("confirmSurveyDeleteButton");
