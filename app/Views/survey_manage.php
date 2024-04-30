@@ -229,6 +229,49 @@
         return;
     }
 
+    async function getAnswers(questionId) {
+        try {
+            const response = await fetch(`<?= base_url('/api/answers?question_id=') ?>${questionId}`, {
+                method: 'GET',
+            });
+
+            if (!response.ok) {
+                const errorResponse = await response.json();
+                console.error(`API request failed with status ${response.status}: ${response.statusText}\n`, errorResponse);
+                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async function getQuestionResponseCount(questionId, answerId = null) {
+        let apiUrl = `<?= base_url('/api/question-responses') ?>?question_id=${questionId}&count`;
+
+        if (answerId !== null) {
+            apiUrl += `&answer_id=${answerId}`;
+        }
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+            });
+
+            if (!response.ok) {
+                const errorResponse = await response.json();
+                console.error(`API request failed with status ${response.status}: ${response.statusText}\n`, errorResponse);
+                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            return data.count;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', async function() {
         const accordionQuestionsContainer = document.getElementById("accordionQuestionsContainer");
 
@@ -262,14 +305,30 @@
                 const multipleChoiceQuestionTemplate = document.getElementById("multipleChoiceAccordion");
                 const multipleChoiceAccordion = multipleChoiceQuestionTemplate.content.cloneNode(true);
 
+                const questionResponseCount = await getQuestionResponseCount(question["id"]);
+
                 accordionBody.append(multipleChoiceAccordion);
+                const tableBody = accordionBody.querySelector('tbody');
 
-                const tableBody = multipleChoiceAccordion.querySelector('tbody');
+                const answers = await getAnswers(question['id']);
+                for (let answer of answers) {
+                    const tableRowTemplate = document.getElementById("multipleChoiceAnswerRow");
+                    const tableRow = tableRowTemplate.content.cloneNode(true);
 
-                const tableRowTemplate = document.getElementById("multipleChoiceAnswerRow");
-                const tableRow = tableRowTemplate.content.cloneNode(true);
+                    tableRow.querySelector('.mc-answer').innerHTML = `${answer['answer']}`;
 
-                tableRow.querySelector('.mc-answer').innerHTML = ``;
+                    const answerResponseCount = await getQuestionResponseCount(question["id"], answer["id"]);
+                    tableRow.querySelector('.mc-response-count').innerHTML = answerResponseCount;
+
+                    if (questionResponseCount != 0) {
+                        tableRow.querySelector('.mc-response-percent').innerHTML = `${Math.round(answerResponseCount / questionResponseCount * 100)}%`;
+                    } else {
+                        tableRow.querySelector('.mc-response-percent').innerHTML = "N/A";
+                    }
+
+                    tableBody.append(tableRow)
+                }
+
             } else if (question["type"] == "free_text") {
                 // TODO
             }
