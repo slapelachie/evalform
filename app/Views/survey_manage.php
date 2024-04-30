@@ -17,7 +17,7 @@
                 <h2 class="me-3 display-6">Analytics</h2>
             </div>
         </div>
-        <div id="surveyFilters" class="row align-items-end my-3">
+        <div id="filtersContainer" class="row align-items-end my-3">
             <div class="col-md-3">
                 <label for="startDateFilter" class="form-label">From:</label>
                 <input type="date" class="form-control" id="startDateFilter">
@@ -30,13 +30,13 @@
                 <label for="questionTypeFilter" class="form-label">Question Type:</label>
                 <select id="questionTypeFilter" class="form-select">
                     <option value="" selected>Any</option>
-                    <option value="multipleChoice">Multiple Choice</option>
-                    <option value="freeText">Free Text</option>
+                    <option value="multiple_choice">Multiple Choice</option>
+                    <option value="free_text">Free Text</option>
                 </select>
             </div>
             <div class="col-md-auto">
                 <div class="col-md">
-                    <button type="button" class="btn btn-primary" onclick="">Apply Filters</button>
+                    <button type="button" class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
                     <button type="button" class="btn btn-outline-danger mx-2" onclick="resetFilters()">Reset Filters</button>
                     <button type="button" class="btn btn-outline-primary" onclick="refreshCounts()">Refresh</button>
                 </div>
@@ -158,9 +158,15 @@
         document.getElementById('questionTypeFilter').selectedIndex = 0;
     }
 
-    async function getQuestions() {
+    async function getQuestions(questionType = null) {
+        let apiUrl = '<?= base_url('/api/questions?survey_id=') . $survey['id'] ?>';
+
+        if (questionType != null) {
+            apiUrl += `&type=${questionType}`
+        }
+
         try {
-            const response = await fetch('<?= base_url('/api/questions?survey_id=') . $survey['id'] ?>', {
+            const response = await fetch(apiUrl, {
                 method: 'GET',
             });
 
@@ -353,11 +359,12 @@
         accordionQuestionsContainer.append(newQuestionAccordion);
     }
 
-    async function setupAccordion() {
+    async function setupAccordion(questionType = null) {
         const accordionQuestionsContainer = document.getElementById("accordionQuestionsContainer");
+        accordionQuestionsContainer.innerHTML = '';
 
         try {
-            var questions = await getQuestions();
+            var questions = await getQuestions(questionType);
         } catch (error) {
             appendAlert("Something went wrong! Please try again later.", 'danger');
             console.error(error);
@@ -371,9 +378,15 @@
         refreshCounts();
     }
 
+    async function applyFilters() {
+        const questionType = document.getElementById("questionTypeFilter");
+        const questionTypeValue = questionType.value != "" ? questionType.value : null;
+
+        setupAccordion(questionTypeValue);
+    }
+
     document.addEventListener('DOMContentLoaded', async function() {
         await setupAccordion();
-
     })
 </script>
 
