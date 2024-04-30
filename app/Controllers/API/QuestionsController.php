@@ -13,12 +13,17 @@ class QuestionsController extends ResourceController
     public function index()
     {
         $surveyId = $this->request->getGet('survey_id');
+        $type = $this->request->getGet('type');
         $count = $this->request->getGet('count');
 
         $query = $this->model;
 
         if ($surveyId !== null) {
             $query = $query->where('survey_id', $surveyId);
+        }
+
+        if ($type !== null) {
+            $query = $query->where('type', $type);
         }
 
         // Count results and send it as a response
