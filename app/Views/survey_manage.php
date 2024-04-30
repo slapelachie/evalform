@@ -13,7 +13,9 @@
                 </div>
             </div>
             <p class="text-muted"><?= $survey['description'] ?></p>
-            <h2 class="mb-2 display-6">Analytics</h2>
+            <div class="d-flex align-items-center mb-2">
+                <h2 class="me-3 display-6">Analytics</h2>
+            </div>
         </div>
         <div id="surveyFilters" class="row align-items-end my-3">
             <div class="col-md-3">
@@ -27,15 +29,16 @@
             <div class="col-md">
                 <label for="questionTypeFilter" class="form-label">Question Type:</label>
                 <select id="questionTypeFilter" class="form-select">
-                    <option value="" selected></option>
+                    <option value="" selected>Any</option>
                     <option value="multipleChoice">Multiple Choice</option>
                     <option value="freeText">Free Text</option>
                 </select>
             </div>
             <div class="col-md-auto">
                 <div class="col-md">
-                    <button type="button" class="btn btn-outline-danger me-2" onclick="resetFilters()">Reset Filters</button>
                     <button type="button" class="btn btn-primary" onclick="">Apply Filters</button>
+                    <button type="button" class="btn btn-outline-danger mx-2" onclick="resetFilters()">Reset Filters</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="refreshCounts()">Refresh</button>
                 </div>
             </div>
         </div>
@@ -89,7 +92,7 @@
 </div>
 
 <template id="questionAccordion">
-    <div class="accordion-item">
+    <div class="question-item accordion-item">
         <h2 class="accordion-header">
             <button class="accordion-button collapsed " type="button" data-bs-toggle="collapse" aria-expanded="false">
                 <!-- Question 123: Foo bar -->
@@ -117,7 +120,7 @@
 </template>
 
 <template id="multipleChoiceAnswerRow">
-    <tr>
+    <tr class="answer-row">
         <td class="mc-answer"></td>
         <td class="mc-response-count"></td>
         <td class="mc-response-percent"></td>
@@ -272,6 +275,29 @@
         }
     }
 
+    async function refreshCounts() {
+        const questionItems = document.querySelectorAll('.question-item');
+        for (let questionItem of questionItems) {
+            const questionId = questionItem.dataset.questionId;
+            const questionResponseCount = await getQuestionResponseCount(questionId);
+
+            const answerRows = questionItem.querySelectorAll('.answer-row');
+            for (let answerRow of answerRows) {
+                const answerId = answerRow.dataset.answerId;
+                const answerResponseCount = await getQuestionResponseCount(questionId, answerId);
+
+                answerRow.querySelector('.mc-response-count').innerHTML = answerResponseCount;
+
+                if (questionResponseCount != 0) {
+                    answerRow.querySelector('.mc-response-percent').innerHTML = `${Math.round(answerResponseCount / questionResponseCount * 100)}%`;
+                } else {
+                    answerRow.querySelector('.mc-response-percent').innerHTML = "N/A";
+                }
+            }
+        }
+
+    }
+
     document.addEventListener('DOMContentLoaded', async function() {
         const accordionQuestionsContainer = document.getElementById("accordionQuestionsContainer");
 
@@ -286,6 +312,9 @@
         for (let question of questions) {
             const questionAccodionTemplate = document.getElementById("questionAccordion");
             const newQuestionAccordion = questionAccodionTemplate.content.cloneNode(true);
+
+            questionItem = newQuestionAccordion.querySelector('.question-item');
+            questionItem.dataset.questionId = question["id"]
 
             accordionHeader = newQuestionAccordion.querySelector('.accordion-header');
             accordionHeader.id = `questionHeader${question['id']}`;
@@ -305,8 +334,6 @@
                 const multipleChoiceQuestionTemplate = document.getElementById("multipleChoiceAccordion");
                 const multipleChoiceAccordion = multipleChoiceQuestionTemplate.content.cloneNode(true);
 
-                const questionResponseCount = await getQuestionResponseCount(question["id"]);
-
                 accordionBody.append(multipleChoiceAccordion);
                 const tableBody = accordionBody.querySelector('tbody');
 
@@ -315,16 +342,9 @@
                     const tableRowTemplate = document.getElementById("multipleChoiceAnswerRow");
                     const tableRow = tableRowTemplate.content.cloneNode(true);
 
-                    tableRow.querySelector('.mc-answer').innerHTML = `${answer['answer']}`;
-
-                    const answerResponseCount = await getQuestionResponseCount(question["id"], answer["id"]);
-                    tableRow.querySelector('.mc-response-count').innerHTML = answerResponseCount;
-
-                    if (questionResponseCount != 0) {
-                        tableRow.querySelector('.mc-response-percent').innerHTML = `${Math.round(answerResponseCount / questionResponseCount * 100)}%`;
-                    } else {
-                        tableRow.querySelector('.mc-response-percent').innerHTML = "N/A";
-                    }
+                    const answerRow = tableRow.querySelector('.answer-row');
+                    answerRow.dataset.answerId = answer["id"];
+                    answerRow.querySelector('.mc-answer').innerHTML = `${answer['answer']}`;
 
                     tableBody.append(tableRow)
                 }
@@ -335,6 +355,8 @@
 
             accordionQuestionsContainer.append(newQuestionAccordion);
         }
+
+        refreshCounts();
     })
 </script>
 
