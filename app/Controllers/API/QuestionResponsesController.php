@@ -12,18 +12,36 @@ class QuestionResponsesController extends ResourceController
 
     public function index()
     {
+        $surveyResponsesModel = new \App\Models\SurveyResponsesModel();
+
         $questionId = $this->request->getGet('question_id');
         $answerId = $this->request->getGet('answer_id');
+        $startDate = $this->request->getGet('start_date');
+        $endDate = $this->request->getGet('end_date');
         $count = $this->request->getGet('count');
 
-        $query = $this->model;
+        log_message('debug', "$startDate");
+
+        $query = $this->model->select('question_responses.*')->join(
+            'survey_responses',
+            'survey_responses.id = question_responses.survey_response_id',
+            'inner'
+        );
 
         if ($questionId !== null) {
-            $query = $query->where('question_id', $questionId);
+            $query = $query->where('question_responses.question_id', $questionId);
         }
 
         if ($answerId !== null) {
-            $query = $query->where('answer_id', $answerId);
+            $query = $query->where('question_responses.answer_id', $answerId);
+        }
+
+        if ($startDate !== null) {
+            $query = $query->where('survey_responses.submit_time >=', date('Y-m-d H:i:s', (int) $startDate));
+        }
+
+        if ($endDate !== null) {
+            $query = $query->where('survey_responses.submit_time <=', date('Y-m-d H:i:s', (int) $endDate));
         }
 
         // Count results and send it as a response
