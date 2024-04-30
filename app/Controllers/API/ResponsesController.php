@@ -28,11 +28,18 @@ class ResponsesController extends ResourceController
     public function index()
     {
         $surveyId = $this->request->getGet('survey_id');
+        $count = $this->request->getGet('count');
 
         $query = $this->model;
 
         if ($surveyId !== null) {
             $query = $query->where('survey_id', $surveyId);
+        }
+
+        // Count results and send it as a response
+        if (isset($count)) {
+            $responseCount = $query->countAllResults();
+            return $this->respond(['count' => $responseCount]);
         }
 
         $surveyResponses = $query->findall();

@@ -13,6 +13,7 @@ class AnswersController extends ResourceController
     public function index()
     {
         $questionId = $this->request->getGet('question_id');
+        $count = $this->request->getGet('count');
 
         $query = $this->model;
 
@@ -20,8 +21,13 @@ class AnswersController extends ResourceController
             $query = $query->where('question_id', $questionId);
         }
 
-        $answers = $query->findall();
+        // Count results and send it as a response
+        if (isset($count)) {
+            $responseCount = $query->countAllResults();
+            return $this->respond(['count' => $responseCount]);
+        }
 
+        $answers = $query->findall();
         return $this->respond($answers);
     }
 

@@ -123,7 +123,7 @@
     }
 
     async function getSurveyResponseCount(surveyId) {
-        apiUrl = `<?= base_url('/api/responses?survey_id=') ?>${surveyId}`;
+        apiUrl = `<?= base_url('/api/responses') ?>?survey_id=${surveyId}&count`;
 
         try {
             var responses = await makeAPICall(apiUrl);
@@ -131,7 +131,7 @@
             throw error;
         }
 
-        return responses.length;
+        return responses.count;
     }
 
     async function generateSurveyRow(survey) {

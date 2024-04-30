@@ -38,6 +38,7 @@ class SurveyController extends ResourceController
     {
         $ownerId = $this->request->getGet('owner_id');
         $status = $this->request->getGet('status');
+        $count = $this->request->getGet('count');
 
         $query = $this->model;
 
@@ -47,6 +48,12 @@ class SurveyController extends ResourceController
 
         if ($status !== null) {
             $query = $query->where("status", $status);
+        }
+
+        // Count results and send it as a response
+        if (isset($count)) {
+            $responseCount = $query->countAllResults();
+            return $this->respond(['count' => $responseCount]);
         }
 
         $surveys = $query->findall();
