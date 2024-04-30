@@ -14,6 +14,9 @@ class QuestionResponsesController extends ResourceController
     {
         $questionId = $this->request->getGet('question_id');
         $answerId = $this->request->getGet('answer_id');
+        $count = $this->request->getGet('count');
+
+        log_message('debug', "Count: $count");
 
         $query = $this->model;
 
@@ -25,9 +28,13 @@ class QuestionResponsesController extends ResourceController
             $query = $query->where('answer_id', $answerId);
         }
 
-        $responses = $query->findall();
-
-        return $this->respond($responses);
+        if (isset($count)) {
+            $responseCount = $query->countAllResults();
+            return $this->respond(['count' => $responseCount]);
+        } else {
+            $responses = $query->findall();
+            return $this->respond($responses);
+        }
     }
 
     public function show($id = null)
