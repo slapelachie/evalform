@@ -183,6 +183,10 @@
     }
 
     async function publishSurvey() {
+        const publishSurveyButton = document.getElementById("publishSurveyButton");
+
+        publishSurveyButton.disabled = true;
+        
         try {
             surveyData = {
                 "status": "published",
@@ -208,8 +212,12 @@
         } catch (error) {
             appendAlert("Failed to publish this survey! Please try again later.", "danger");
             console.error(error);
+            publishSurveyButton.disabled = false;
             return;
         }
+
+        publishSurveyButton.style.display = 'none';
+        appendAlert("Successfully published this survey.", "success");
     }
 
     async function deleteSurvey() {
