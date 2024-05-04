@@ -177,6 +177,7 @@
     }
 
     async function refreshSurveys() {
+        // function exists in case I want to change this
         await presentSurveys();
     }
 
