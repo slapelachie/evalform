@@ -44,13 +44,23 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="<?= base_url("/admin") ?>">
-                                        Site Admin
+                                    <a class="dropdown-item" href="<?= base_url("/user/settings") ?>">
+                                        Settings
                                     </a>
                                 </li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
+                                <?php if (auth()->user()->can('admin.access')) : ?>
+                                    <li>
+                                        <a class="dropdown-item" href="<?= base_url("/admin") ?>">
+                                            Site Admin
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                <?php endif ?>
                                 <li>
                                     <a class="dropdown-item" href="<?= base_url("/logout") ?>">
                                         Sign Out
