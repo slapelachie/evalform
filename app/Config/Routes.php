@@ -13,6 +13,7 @@ $routes->group('surveys', function ($routes) {
     $routes->get('thank-you', 'SurveyController::thankYou');
 });
 
+/* Survey Routes with Authorisation */
 $routes->group('surveys', ['filter' => 'session'], function ($routes) {
     $routes->get('/', 'SurveyController::index');
     $routes->get('create', 'SurveyController::create');
@@ -21,7 +22,7 @@ $routes->group('surveys', ['filter' => 'session'], function ($routes) {
 });
 
 /* Admin Routes */
-$routes->group('admin', ['filter' => 'admin'], function ($routes) {
+$routes->group('admin', ['filter' => ['session', 'admin']], function ($routes) {
     $routes->get('/', 'AdminController::index');
     $routes->get('users', 'AdminController::users');
 });

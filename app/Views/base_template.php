@@ -21,53 +21,61 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a href="<?= base_url(); ?>" class="nav-link <?= service('router')->getMatchedRoute()[0] == '/' ? 'active' : ''; ?>">
-                                Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item vr"></li>
-                        <li class="nav-item d-flex align-items-center dropdown">
-                            <a href="#" class="nav-link dropdown-toggle d-flex align-items-center justify-content-center" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="d-flex align-items-center bi bi-person-circle"></i>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <span class="dropdown-item">Signed in as <b><?= auth()->user()->username ?></b></span>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="<?= base_url("/profile") ?>">
-                                        Profile
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="<?= base_url("/user/settings") ?>">
-                                        Settings
-                                    </a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <?php if (auth()->user()->can('admin.access')) : ?>
+                        <?php if (auth()->loggedIn()) : ?>
+                            <li class="nav-item">
+                                <a href="<?= base_url(); ?>" class="nav-link <?= service('router')->getMatchedRoute()[0] == '/' ? 'active' : ''; ?>">
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item vr"></li>
+                            <li class="nav-item d-flex align-items-center dropdown">
+                                <a href="#" class="nav-link dropdown-toggle d-flex align-items-center justify-content-center" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="d-flex align-items-center bi bi-person-circle"></i>
+                                </a>
+                                <ul class="dropdown-menu">
                                     <li>
-                                        <a class="dropdown-item" href="<?= base_url("/admin") ?>">
-                                            Site Admin
+                                        <span class="dropdown-item">Signed in as <b><?= auth()->user()->username ?></b></span>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="<?= base_url("/profile") ?>">
+                                            Profile
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="<?= base_url("/user/settings") ?>">
+                                            Settings
                                         </a>
                                     </li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
-                                <?php endif ?>
-                                <li>
-                                    <a class="dropdown-item" href="<?= base_url("/logout") ?>">
-                                        Sign Out
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                                    <?php if (auth()->user()->can('admin.access')) : ?>
+                                        <li>
+                                            <a class="dropdown-item" href="<?= base_url("/admin") ?>">
+                                                Site Admin
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                    <?php endif ?>
+                                    <li>
+                                        <a class="dropdown-item" href="<?= base_url("/logout") ?>">
+                                            Sign Out
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        <?php else : ?>
+                            <li class="nav-item">
+                                <a href="<?= base_url('/login'); ?>" class="nav-link">
+                                    Log In
+                                </a>
+                            </li>
+                        <?php endif ?>
                     </ul>
                 </div>
             </div>
