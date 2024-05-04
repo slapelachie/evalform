@@ -75,6 +75,15 @@
     </header>
 
     <main>
+        <?php if (session()->getFlashdata('error')) : ?>
+            <div class="container">
+                <div class="my-3 alert alert-danger alert-dismissible" role="alert">
+                    <div><?= session()->getFlashdata('error') ?></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+            </div>
+        <?php endif ?>
         <?= $this->renderSection('content') ?>
     </main>
 

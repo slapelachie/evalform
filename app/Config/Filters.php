@@ -34,6 +34,7 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        'admin'         => \App\Filters\AdminFilter::class,
     ];
 
     /**
@@ -69,7 +70,7 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            'session' => ['except' => ['login*', 'register', 'auth/a/*', 'logout', 'surveys/(\d+)', 'api/*']],
+            //
         ],
         'after' => [
             // 'honeypot',
