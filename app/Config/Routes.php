@@ -34,7 +34,10 @@ $routes->group('api', ['namespace' => 'App\Controllers\API'], function ($routes)
     $routes->resource('answers', ['controller' => 'AnswersController']);
     $routes->resource('responses', ['controller' => 'ResponsesController']);
     $routes->resource('question-responses', ['controller' => 'QuestionResponsesController']);
+});
 
+/* Admin API Routes */
+$routes->group('api', ['namespace' => 'App\Controllers\API', 'filter' => ['apiadmin']], function ($routes) {
     $routes->resource('users', ['controller' => 'UsersController']);
 });
 

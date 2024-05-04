@@ -20,8 +20,6 @@ class QuestionResponsesController extends ResourceController
         $endDate = $this->request->getGet('end_date');
         $count = $this->request->getGet('count');
 
-        log_message('debug', "$startDate");
-
         $query = $this->model->select('question_responses.*')->join(
             'survey_responses',
             'survey_responses.id = question_responses.survey_response_id',
