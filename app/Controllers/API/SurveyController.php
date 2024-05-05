@@ -163,7 +163,6 @@ class SurveyController extends ResourceController
 
     public function update($id = null)
     {
-        // TODO
         $survey = $this->model->find($id);
         if ($survey == null) {
             return $this->failNotFound('Survey not found with id: ' . $id);

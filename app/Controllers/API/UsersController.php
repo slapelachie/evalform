@@ -4,6 +4,7 @@ namespace App\Controllers\API;
 
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
+use CodeIgniter\Shield\Entities\User;
 
 class UsersController extends ResourceController
 {
@@ -45,38 +46,53 @@ class UsersController extends ResourceController
     }
 
     /**
-     * Return a new resource object, with default properties.
-     *
-     * @return ResponseInterface
-     */
-    public function new()
-    {
-        //
-    }
-
-    /**
      * Create a new resource object, from "posted" parameters.
      *
      * @return ResponseInterface
      */
     public function create()
     {
-        //
-    }
-
-    /**
-     * Return the editable properties of a resource object.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
-     */
-    public function edit($id = null)
-    {
         $users = auth()->getProvider();
-        $user = $users->findById($id);
 
-        return $this->respond($user);
+        // Fetch input as associative array
+        $data = $this->request->getJSON(true);
+
+        // Validate the input
+        if (!auth()->validate($data)) {
+            return $this->failValidationErrors(auth()->errors());
+        }
+
+        // Create a new shield user
+        $user = new User([
+            'username' => esc($data['username']),
+            'email' => esc($data['email']),
+            'password' => $data['password'],
+        ]);
+
+        // Save the user and handle errors
+        if (!$users->save($user)) {
+            return $this->failServerError('Failed to create user');
+        }
+
+        // Get the new user
+        $newUser = $users->findById($users->getInsertID());
+
+        // Set the correct group for the new user
+        if (isset($data['admin']) && $data['admin'] === true) {
+            $newUser->addGroup('superadmin');
+        } else {
+            $users->addToDefaultGroup($newUser);
+        }
+
+        // Handle if the password should be reset
+        if (isset($data['reset_password']) && $data['reset_password']) {
+            $newUser->forcePasswordReset();
+        }
+
+        // Activate the new user
+        $newUser->activate();
+
+        return $this->respondCreated($newUser);
     }
 
     /**
