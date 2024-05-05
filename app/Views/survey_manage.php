@@ -383,7 +383,7 @@
         if (question["type"] == "multiple_choice") {
             await setupMultipleChoiceQuestion(accordionBody, question["id"]);
         } else if (question["type"] == "free_text") {
-            // TODO
+            // TODO: implement this
         }
 
         accordionQuestionsContainer.append(newQuestionAccordion);

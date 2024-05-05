@@ -11,10 +11,10 @@ class DashboardController extends BaseController
 
         $userId = auth()->user()->id;
 
-        // TODO: Get list of surveys
+        // Get list of surveys
         $data['surveys'] = $surveyModel->where('owner_id', $userId)->findAll();
 
-        // TODO: Get insights
+        // Get insights
         $publishCount = 0;
         $draftCount = 0;
         $surveyResponseCount = 0;
@@ -29,6 +29,7 @@ class DashboardController extends BaseController
             $surveyResponseCount += count($surveyResponsesModel->where('survey_id', $survey['id'])->findAll());
         }
 
+        // TODO: See if there is a good alternative to survey views
         $data['insights'] = [
             'publishes' => [
                 'name' => 'Published Surveys',
