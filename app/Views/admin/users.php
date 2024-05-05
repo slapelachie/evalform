@@ -1,7 +1,14 @@
 <?= $this->extend('admin/sidebar') ?>
 <?= $this->section('content') ?>
 
-<h1>User Management</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h1>User Management</h1>
+    <div>
+        <button class="btn btn-outline-primary" type="button" onclick="newUser()">New User</button>
+        <button class="btn btn-outline-primary" type="button" onclick="refreshUsers()">Refresh</button>
+    </div>
+</div>
 
 <div id="alert"></div>
 
@@ -152,6 +159,15 @@
         }
     }
 
+    async function refreshUsers() {
+        const userTable = document.getElementById("userTable");
+        const userTableBody = userTable.querySelector("tbody");
+
+        userTableBody.innerHTML = '';
+
+        await presentUsers();
+    }
+
     async function toggleUserStatus(userId, status) {
         data = {
             'active': !status
@@ -195,19 +211,18 @@
                 const userId = closestUserRow.dataset.userId;
                 const status = closestUserRow.dataset.status === "true";
 
-                console.log(status, closestUserRow.dataset.status)
-
                 statusToggleButton.disabled = true;
 
                 try {
                     var updatedUser = await toggleUserStatus(userId, status)
                 } catch (error) {
+                    appendAlert("Failed to change the status of the user! Please try again later.", "danger")
                     console.error(error);
                     statusToggleButton.disabled = false;
                     return;
                 }
 
-                console.log(updatedUser);
+                refreshUsers();
             }
 
         });

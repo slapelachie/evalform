@@ -12,9 +12,6 @@
                     <li class="nav-item">
                         <a class="nav-link <?= service('router')->getMatchedRoute()[0] == 'admin/users' ? 'active' : ''; ?>" href="<?= base_url('/admin/users') ?>">Users</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Placeholder</a>
-                    </li>
                 </ul>
 
             </div>
