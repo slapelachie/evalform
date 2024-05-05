@@ -29,6 +29,23 @@
     </table>
 </div>
 
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteUserLabel">Delete User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-grid gap-3">
+                <button id="confirmUserDeleteButton" type="button" class="btn btn-outline-danger" data-bs-dismiss="modal" onclick="deleteUser()">Yes, delete this user.</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <template id="userRowTemplate">
     <tr class="user-row">
         <td class="username"></td>
@@ -112,9 +129,12 @@
         const lastActiveElement = newUserRow.querySelector('.last-active')
         const statusElement = newUserRow.querySelector('.status')
         const adminElement = newUserRow.querySelector('.is-admin')
+        const manageButton = newUserRow.querySelector('.manage-button');
         const statusToggleButton = newUserRow.querySelector('.status-toggle-button');
+        const deleteButton = newUserRow.querySelector('.delete-button');
 
         newUserRow.dataset.userId = user['id'];
+        newUserRow.dataset.username = user['username'];
         newUserRow.dataset.status = true;
 
         if (!user["active"]) {
@@ -130,13 +150,12 @@
             newUserRow.dataset.status = false;
         }
 
-        // TODO: Add last active row with content like "3 hours ago" etc
         usernameElement.textContent = user['username'];
         lastActiveElement.textContent = generateTimeAgo(user['last_active']['date']);
         statusElement.textContent = user["active"] ? "Enabled" : "Disabled";
         adminElement.textContent = user["admin"] ? "Yes" : "No";
 
-        // TODO: Add functionality to buttons
+        manageButton.href = `<?= base_url('admin/users') ?>/${user['id']}`;
 
         return newUserRow;
     }
@@ -196,6 +215,11 @@
         }
     }
 
+    async function deleteUser(userId) {
+        // TODO: implement
+        console.log(`Deleting user with id: ${userId}`)
+    }
+
     document.addEventListener('DOMContentLoaded', async function() {
         // Get the query params
         const urlParams = new URLSearchParams(window.location.search);
@@ -205,8 +229,9 @@
         await presentUsers();
 
         document.addEventListener('click', async function(event) {
-            if (event.target.classList.contains('status-toggle-button')) {
-                const statusToggleButton = event.target;
+            const target = event.target;
+            if (target.classList.contains('status-toggle-button')) {
+                const statusToggleButton = target;
                 const closestUserRow = statusToggleButton.closest('.user-row');
                 const userId = closestUserRow.dataset.userId;
                 const status = closestUserRow.dataset.status === "true";
@@ -223,6 +248,17 @@
                 }
 
                 refreshUsers();
+            } else if (target.classList.contains('delete-button')) {
+                const closestUserRow = target.closest('.user-row');
+
+                const deleteModalLabel = document.getElementById("deleteUserLabel");
+                const deleteModal = document.getElementById("deleteUserModal");
+                const deleteButton = document.getElementById("confirmUserDeleteButton");
+
+                deleteModalLabel.textContent = `Delete User "${closestUserRow.dataset.username}"`;
+                deleteButton.onclick = function() {
+                    deleteUser(closestUserRow.dataset.userId);
+                }
             }
 
         });
