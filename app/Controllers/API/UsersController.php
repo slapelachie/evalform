@@ -17,7 +17,7 @@ class UsersController extends ResourceController
     public function index()
     {
         $userProvider = auth()->getProvider();
-        $users = $userProvider->select('id, username, last_active')->findall();
+        $users = $userProvider->select('id, username, last_active, active')->findall();
 
         foreach ($users as &$user) {
             $authUser = $userProvider->findById($user->id);
@@ -73,7 +73,10 @@ class UsersController extends ResourceController
      */
     public function edit($id = null)
     {
-        //
+        $users = auth()->getProvider();
+        $user = $users->findById($id);
+
+        return $this->respond($user);
     }
 
     /**
@@ -85,7 +88,19 @@ class UsersController extends ResourceController
      */
     public function update($id = null)
     {
-        //
+        $users = auth()->getProvider();
+        $user = $users->findById($id);
+        if ($user == null) {
+            return $this->failNotFound('User not found with id: ' . $id);
+        }
+
+        $data = $this->request->getJSON(true);
+
+        if ($users->update($id, $data)) {
+            $updatedUser = $users->findById($id);
+            return $this->respondUpdated($updatedUser);
+        }
+        return $this->failServerError('Could not update the user');
     }
 
     /**
