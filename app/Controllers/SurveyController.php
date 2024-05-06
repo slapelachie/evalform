@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\SurveysModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class SurveyController extends BaseController
@@ -95,6 +94,78 @@ class SurveyController extends BaseController
             'survey' => $survey ?? [],
             'questions' => $questions ?? [],
         ]);
+    }
+
+    public function export($surveyId = null)
+    {
+        $surveysModel = new \App\Models\SurveysModel();
+        $questionsModel = new \App\Models\QuestionsModel();
+        $answersModel = new \App\Models\AnswersModel();
+        $surveyResponsesModel = new \App\Models\SurveyResponsesModel();
+        $questionResponsesModel = new \App\Models\QuestionResponsesModel();
+
+        // Get format to export as
+        $format = $this->request->getGet('format') ?? "csv";
+
+        // Check if survey exists
+        $survey = $surveysModel->find($surveyId);
+        if ($survey === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("This survey could not be found!");
+        }
+
+        // Check if have correct permissions
+        if ($survey['owner_id'] != auth()->user()->id) {
+            return $this->response->setStatusCode(403)->setBody("Forbidden");
+        }
+
+        $surveyResponses = $surveyResponsesModel->where('survey_id', $surveyId)->findAll();
+        $data = [['id', 'survey_response_id', 'question', 'answer']];
+
+        foreach ($surveyResponses as $surveyResponse) {
+            $questionResponses = $questionResponsesModel->where('survey_response_id', $surveyResponse['id'])->findAll();
+
+            foreach ($questionResponses as $questionResponse) {
+                $question = $questionsModel->find($questionResponse['question_id']);
+
+                // Get the answer to the question, it is either free text or the value of the mc
+                $answerValue = $questionResponse['answer_text'];
+                if ($questionResponse['answer_id'] != null) {
+                    $answer = $answersModel->find($questionResponse['answer_id']);
+                    $answerValue = $answer['answer'];
+                }
+
+                // Skip if the question or the answer do not exist
+                if ($question == null || $answer == null) {
+                    continue;
+                }
+
+                // Build the response
+                $individualResponse = [$questionResponse['id'], $questionResponse['survey_response_id'], $question['question'], $answerValue];
+
+                $data[] = $individualResponse;
+            }
+        }
+
+        if ($format == "csv") {
+            $response = $this->response
+                ->setHeader('Content-Type', 'text/csv')
+                ->setHeader('Content-Disposition', 'attachment; filename="survey_results.csv"')
+                ->noCache();
+
+            $fp = fopen('php://output', 'w');
+
+            foreach ($data as $row) {
+                fputcsv($fp, $row);
+            }
+
+            fclose($fp);
+
+            return $response->send();
+        }
+
+        return $this->response
+            ->setStatusCode(400)
+            ->setBody("Format '$format' is not supported.");
     }
 
     public function thankYou()

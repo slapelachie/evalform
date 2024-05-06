@@ -7,8 +7,14 @@
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h1 class="display-5 mb-2">Manage "<?= $survey['name'] ?>"</h1>
                 <div class="align-items-center ">
-                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#shareSurveyModal">Share</button>
-                    <a href="<?= base_url('/surveys/') . $survey['id'] ?>"><button type="button" class="btn btn-primary btn-sm">View</button></a>
+                    <button class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Actions
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#shareSurveyModal">Share</a></li>
+                        <li><a type="button" class="dropdown-item" href="<?= base_url('/surveys/') . $survey['id'] ?>/export">Export</a></li>
+                        <li><a type="button" class="dropdown-item" href="<?= base_url('/surveys/') . $survey['id'] ?>">View</a></li>
+                    </ul>
                     <a href="<?= base_url('/surveys/') . $survey['id'] ?>/edit"><button type="button" class="btn btn-warning btn-sm">Edit</button></a>
                     <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteSurveyModal">Delete</button>
                 </div>

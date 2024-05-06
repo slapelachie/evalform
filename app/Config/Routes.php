@@ -19,6 +19,7 @@ $routes->group('surveys', ['filter' => 'session'], function ($routes) {
     $routes->get('create', 'SurveyController::create');
     $routes->get('(:num)/manage', 'SurveyController::manage/$1');
     $routes->get('(:num)/edit', 'SurveyController::edit/$1');
+    $routes->get('(:num)/export', 'SurveyController::export/$1');
 });
 
 /* Admin Routes */
