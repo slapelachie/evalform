@@ -41,6 +41,8 @@
     </div>
 </section>
 
+<?= view('snippets/qrcode_modal') ?>
+
 <div class="modal fade" id="deleteSurveyModal" tabindex="-1" aria-labelledby="deleteSurveyModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -63,11 +65,14 @@
         <td class="survey-name"></td>
         <td class="survey-responses"></td>
         <td class="survey-actions text-end">
+            <button class="share-button btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#shareSurveyModal">Share</button>
             <a class="manage-button btn btn-primary btn-sm" href="#">Manage</a>
             <button class="delete-button btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteSurveyModal" data-survey-id="" data-survey-name="">Delete</button>
         </td>
     </tr>
 </template>
+
+<script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 
 <?= view('snippets/common_scripts') ?>
 <?= view('snippets/api_scripts') ?>
@@ -130,6 +135,10 @@
         const deleteButton = newSurvey.querySelector(".delete-button");
         deleteButton.dataset.surveyId = survey["id"];
         deleteButton.dataset.surveyName = survey["name"];
+
+        const shareButton = newSurvey.querySelector(".share-button");
+        shareButton.dataset.surveyId = survey["id"];
+        shareButton.dataset.surveyName = survey["name"];
 
         return newSurvey;
     }
@@ -208,6 +217,9 @@
         const deleteModal = document.getElementById("deleteSurveyModal");
         const deleteButton = document.getElementById("confirmSurveyDeleteButton");
         const deleteModalLabel = document.getElementById("deleteSurveyLabel");
+        const shareModalLabel = document.getElementById("shareSurveyLabel");
+
+        const qrcodeElement = document.getElementById("qrcode");
 
         surveyTable.querySelector('tbody').addEventListener('click', function(event) {
             const target = event.target;
@@ -219,6 +231,16 @@
                 deleteButton.onclick = function() {
                     deleteSurvey(surveyId);
                 }
+            } else if (target.classList.contains('share-button')) {
+                const surveyId = target.dataset.surveyId;
+                const surveyName = target.dataset.surveyName;
+
+                qrcodeElement.innerHTML = '';
+
+                // Setup QRCode
+                new QRCode(qrcodeElement, `<?= base_url('/surveys') ?>/${surveyId}`);
+
+                shareModalLabel.textContent = `Share Survey "${surveyName}"`;
             }
         });
     });

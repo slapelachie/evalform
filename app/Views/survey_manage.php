@@ -7,6 +7,7 @@
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h1 class="display-5 mb-2">Manage "<?= $survey['name'] ?>"</h1>
                 <div class="align-items-center ">
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#shareSurveyModal">Share</button>
                     <a href="<?= base_url('/surveys/') . $survey['id'] ?>"><button type="button" class="btn btn-primary btn-sm">View</button></a>
                     <a href="<?= base_url('/surveys/') . $survey['id'] ?>/edit"><button type="button" class="btn btn-warning btn-sm">Edit</button></a>
                     <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteSurveyModal">Delete</button>
@@ -54,6 +55,8 @@
         </div>
     </div>
 </section>
+
+<?= view('snippets/qrcode_modal') ?>
 
 <div class="modal fade" id="deleteSurveyModal" tabindex="-1" aria-labelledby="deleteSurveyModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -147,6 +150,8 @@
         </tbody>
     </table>
 </template>
+
+<script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 
 <?= view('snippets/common_scripts') ?>
 <?= view('snippets/api_scripts') ?>
@@ -385,6 +390,9 @@
 
     document.addEventListener('DOMContentLoaded', async function() {
         await setupAccordion();
+
+        // Setup QRCode
+        new QRCode(document.getElementById("qrcode"), `<?= base_url('/surveys/') . $survey['id'] ?>`);
     })
 </script>
 
