@@ -137,9 +137,14 @@
         }
 
         usernameElement.textContent = user['username'];
-        lastActiveElement.textContent = generateTimeAgo(user['last_active']['date']);
         statusElement.textContent = user["active"] ? "Enabled" : "Disabled";
         adminElement.textContent = user["admin"] ? "Yes" : "No";
+
+        if (user['last_active'] != null) {
+            lastActiveElement.textContent = generateTimeAgo(user['last_active']['date']);
+        } else {
+            lastActiveElement.textContent = "Never"
+        }
 
         manageButton.href = `<?= base_url('admin/users') ?>/${user['id']}`;
 
