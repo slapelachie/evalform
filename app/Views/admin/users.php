@@ -54,7 +54,7 @@
         <td class="is-admin"></td>
         <td class="user-actions text-end">
             <a class="manage-button btn btn-primary btn-sm" href="#">Edit</a>
-            <button type="button" class="status-toggle-button btn btn-warning btn-sm">Deactivate</button>
+            <button type="button" class="status-toggle-button btn btn-warning btn-sm">Disable</button>
             <button class="delete-button btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteUserModal">Delete</button>
         </td>
     </tr>
@@ -130,7 +130,7 @@
 
             statusToggleButton.classList.remove("btn-warning");
             statusToggleButton.classList.add("btn-primary");
-            statusToggleButton.textContent = "Activate";
+            statusToggleButton.textContent = "Enable";
 
             newUserRow.dataset.status = false;
         }

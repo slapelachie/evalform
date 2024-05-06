@@ -49,16 +49,23 @@
 
                 </div>
             <?php else : ?>
+                <!-- TODO: Implement password change feature? -->
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="enabledCheck" <?= $user->active ? "checked" : "" ?>>
+                    <label class="form-check-label" for="enabledCheck">
+                        Enabled
+                    </label>
+                </div>
             <?php endif ?>
             <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" id="administratorCheck" <?= isset($user) ? ($user->admin ? "checked" : "") : "" ?>>
-                <label class="form-check-label" for="flexCheckDefault">
+                <label class="form-check-label" for="administratorCheck">
                     Adminstrator
                 </label>
             </div>
             <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" id="resetPasswordCheck">
-                <label class="form-check-label" for="flexCheckDefault">
+                <label class="form-check-label" for="resetPasswordCheck">
                     Reset Password
                 </label>
             </div>
@@ -107,12 +114,14 @@
 
         const username = document.getElementById("usernameInput").value;
         const email = document.getElementById("emailInput").value;
+        const enabled = document.getElementById("enabledCheck").checked;
         const administrator = document.getElementById("administratorCheck").checked;
         const resetPassword = document.getElementById("resetPasswordCheck").checked;
 
         const data = {
             'username': username,
             'email': email,
+            'active': enabled,
             'admin': administrator,
             'reset_password': resetPassword,
         }
