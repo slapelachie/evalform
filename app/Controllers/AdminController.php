@@ -16,4 +16,9 @@ class AdminController extends BaseController
     {
         return view('admin/users');
     }
+
+    public function createUser()
+    {
+        return view('admin/user_create');
+    }
 }

@@ -57,11 +57,6 @@ class UsersController extends ResourceController
         // Fetch input as associative array
         $data = $this->request->getJSON(true);
 
-        // Validate the input
-        if (!auth()->validate($data)) {
-            return $this->failValidationErrors(auth()->errors());
-        }
-
         // Create a new shield user
         $user = new User([
             'username' => esc($data['username']),
