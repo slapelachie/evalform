@@ -34,6 +34,10 @@
             <tbody>
             </tbody>
         </table>
+        <div id="loadingContainer" class="my-5 d-flex justify-content-center align-items-center w-100" style="height: 20vw;">
+            <span class="display-5 ">Loading...</span>
+        </div>
+        <div id="paginationContainer"></div>
     </div>
 </section>
 
@@ -84,15 +88,19 @@
         return;
     }
 
-    async function getSurveys(surveyStatus = null) {
+    async function getSurveys(surveyStatus = null, page = 1) {
         apiUrl = `<?= base_url('/api/surveys?owner_id=') . auth()->user()->id ?>`;
 
         if (surveyStatus != null) {
             apiUrl += `&status=${surveyStatus}`;
         }
 
+        if (page != 1) {
+            apiUrl += `&page=${page}`
+        }
+
         try {
-            return await makeGetAPICall(apiUrl)
+            return await makeGetAPICall(apiUrl);
         } catch (error) {
             throw error;
         }
@@ -126,28 +134,50 @@
         return newSurvey;
     }
 
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
     async function presentSurveys() {
         const surveyTable = document.getElementById("surveyTable");
+        const paginationContainer = document.getElementById("paginationContainer");
+        const loadingContainer = document.getElementById("loadingContainer");
         const surveyTableBody = surveyTable.querySelector("tbody");
 
         const surveyStatusFilter = document.getElementById('surveyStatusFilter')
         const surveyStatusValue = surveyStatusFilter.value != "any" ? surveyStatusFilter.value : null;
+        const pageParam = getQueryParam('page') ?? 1;
 
         try {
-            var surveys = await getSurveys(surveyStatusValue);
+            var paginatedSurveys = await getSurveys(surveyStatusValue, pageParam);
         } catch (error) {
             appendAlert("Something went wrong! Please try again later.", 'danger');
             console.error(error);
             return;
         }
 
+        // Show loading element
+        loadingContainer.classList.remove('d-none');
+
         // Clear current surveys if they are already presented
-        surveyTableBody.innerHTML = "";
+        surveyTableBody.innerHTML = '';
+
+        const surveys = paginatedSurveys['results'];
+        const pagination = paginatedSurveys['pagination'];
+
+        paginationContainer.innerHTML = pagination['links'].replace(/\/api/g, '');
 
         // Append each survey to the table
+        let surveyRows = [];
         for (const survey of surveys) {
-            surveyRow = await generateSurveyRow(survey);
-            surveyTableBody.appendChild(surveyRow);
+            surveyRows.push(await generateSurveyRow(survey));
+        }
+
+        loadingContainer.classList.add("d-none");
+
+        for (const surveyRow of surveyRows) {
+            surveyTableBody.append(surveyRow);
         }
     }
 

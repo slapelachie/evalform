@@ -40,8 +40,14 @@ class SurveyController extends ResourceController
         $status = $this->request->getGet('status');
         $count = $this->request->getGet('count');
 
+        // Pagination setup
+        $pager = \Config\Services::pager();
+        $page = (int) ($this->request->getGet('page') ?? 1);
+        $perPage = 20;
+
         $query = $this->model;
 
+        // Apply filters if present
         if ($ownerId !== null) {
             $query = $query->where("owner_id", $ownerId);
         }
@@ -50,21 +56,36 @@ class SurveyController extends ResourceController
             $query = $query->where("status", $status);
         }
 
+        // Count the total amount of results
+        $totalResults = $query->countAllResults(false);
+
         // Count results and send it as a response
         if (isset($count)) {
-            $responseCount = $query->countAllResults();
-            return $this->respond(['count' => $responseCount]);
+            return $this->respond(['count' => $totalResults]);
         }
 
-        $surveys = $query->findall();
+        // Apply pagination offset and limit
+        $surveys = $query->findall($perPage, ($page - 1) * $perPage);
 
+        // Process and complete data for surveys
         foreach ($surveys as &$survey) {
             $questions = $this->getQuestions($survey['id']);
             $survey['questions'] = $questions;
         }
         unset($survey);
 
-        return $this->respond($surveys);
+        // Get pagination links
+        $paginationLinks = $pager->makeLinks($page, $perPage, $totalResults, 'bootstrap_full');
+
+        return $this->respond([
+            'results' => $surveys,
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $totalResults,
+                'links' => $paginationLinks,
+            ]
+        ]);
     }
 
     public function show($id = null)
