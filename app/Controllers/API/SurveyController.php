@@ -100,9 +100,15 @@ class SurveyController extends ResourceController
         return $this->respond($survey);
     }
 
-    private function insertQuestions($questions, $surveyId)
+    private function upsertQuestions($questions, $surveyId)
     {
         $questionsModel = new \App\Models\QuestionsModel();
+
+        // Gather all existing question IDs for the survey
+        $existingQuestions = $questionsModel->where('survey_id', $surveyId)->findAll();
+        $existingQuestionIds = array_column($existingQuestions, 'id');
+
+        $updatedQuestionIds = [];
 
         foreach ($questions as $question) {
             $questionData = [
@@ -112,28 +118,50 @@ class SurveyController extends ResourceController
                 'question' => $question['question'],
             ];
 
-            // Insert questions
-            if (!$questionsModel->insert($questionData)) {
-                $errorMessage = $this->getModelErrorMessage($questionsModel);
-                throw new \Exception($errorMessage);
+            // Check if the question needs updating, insert it otherwise
+            if (isset($question['id']) && in_array($question['id'], $existingQuestionIds)) {
+                if (!$questionsModel->update($question['id'], $questionData)) {
+                    $errorMessage = $this->getModelErrorMessage($questionsModel);
+                    throw new \Exception($errorMessage);
+                }
+                $updatedQuestionIds[] = $question['id'];
+                $questionId = $question['id'];
+            } else {
+                if (!$questionsModel->insert($questionData)) {
+                    $errorMessage = $this->getModelErrorMessage($questionsModel);
+                    throw new \Exception($errorMessage);
+                }
+
+                $questionId = $questionsModel->getInsertID();
             }
 
-            $questionId = $questionsModel->getInsertID();
 
             // Handle answers if they exist
             if (isset($question['answers']) && $question['type'] == 'multiple_choice') {
                 try {
-                    $this->insertAnswers($question['answers'], $questionId);
+                    $this->upsertAnswers($question['answers'], $questionId);
                 } catch (\Exception $error) {
                     throw $error;
                 }
             }
         }
+
+        // Remove any dangling questions
+        $questionsToDelete = array_diff($existingQuestionIds, $updatedQuestionIds);
+        if (!empty($questionsToDelete)) {
+            $questionsModel->whereIn('id', $questionsToDelete)->delete();
+        }
     }
 
-    private function insertAnswers($answers, $questionId)
+    private function upsertAnswers($answers, $questionId)
     {
         $answersModel = new \App\Models\AnswersModel();
+
+        // Retrieve existing answers for this question
+        $existingAnswers = $answersModel->where('question_id', $questionId)->findAll();
+        $existingAnswerIds = array_column($existingAnswers, 'id');
+
+        $updatedAnswerIds = [];
 
         foreach ($answers as $answer) {
             $answerData = [
@@ -142,10 +170,25 @@ class SurveyController extends ResourceController
                 'answer' => $answer['answer'],
             ];
 
-            if (!$answersModel->insert($answerData)) {
-                $errorMessage = $this->getModelErrorMessage($answersModel);
-                throw new \Exception($errorMessage);
+            // Check if question needs updating, insert it otherwise
+            if (isset($answer['id']) && in_array($answer['id'], $existingAnswerIds)) {
+                if (!$answersModel->update($answer['id'], $answerData)) {
+                    $errorMessage = $this->getModelErrorMessage($answersModel);
+                    throw new \Exception($errorMessage);
+                }
+                $updatedAnswerIds[] = $answer['id'];
+            } else {
+                if (!$answersModel->insert($answerData)) {
+                    $errorMessage = $this->getModelErrorMessage($answersModel);
+                    throw new \Exception($errorMessage);
+                }
             }
+        }
+
+        // Remove any dangling answers
+        $answersToDelete = array_diff($existingAnswerIds, $updatedAnswerIds);
+        if (!empty($answersToDelete)) {
+            $answersModel->whereIn('id', $answersToDelete)->delete();
         }
     }
 
@@ -166,7 +209,7 @@ class SurveyController extends ResourceController
         // Handle questions if they exist
         if (isset($data['questions'])) {
             try {
-                $this->insertQuestions($data['questions'], $surveyId);
+                $this->upsertQuestions($data['questions'], $surveyId);
             } catch (\Exception $error) {
                 $this->model->transRollback();
                 return $this->fail($error->getMessage());
@@ -190,12 +233,23 @@ class SurveyController extends ResourceController
         }
 
         $data = $this->request->getJSON(true);
-
-        if ($this->model->update($id, $data)) {
-            $updatedSurvey = $this->model->find($id);
-            return $this->respondUpdated($updatedSurvey);
+        if (!$this->model->update($id, $data)) {
+            return $this->failServerError('Could not update the survey');
         }
-        return $this->failServerError('Could not update the survey');
+
+        // Handle questions if they exist
+        if (isset($data['questions'])) {
+            try {
+                $this->upsertQuestions($data['questions'], $id);
+            } catch (\Exception $error) {
+                return $this->failServerError($error->getMessage());
+            }
+        }
+
+        $updatedSurvey = $this->model->find($id);
+        $updatedSurvey['questions'] = $this->getQuestions($id);
+
+        return $this->respondUpdated($updatedSurvey);
     }
 
     public function delete($id = null)

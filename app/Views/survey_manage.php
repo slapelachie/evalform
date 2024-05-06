@@ -5,7 +5,7 @@
     <div class="container">
         <div class="mb-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <h1 class="display-5 mb-2">Manage <?= $survey['name'] ?></h1>
+                <h1 class="display-5 mb-2">Manage "<?= $survey['name'] ?>"</h1>
                 <div class="align-items-center ">
                     <a href="<?= base_url('/surveys/') . $survey['id'] ?>"><button type="button" class="btn btn-primary btn-sm">View</button></a>
                     <a href="<?= base_url('/surveys/') . $survey['id'] ?>/edit"><button type="button" class="btn btn-warning btn-sm">Edit</button></a>

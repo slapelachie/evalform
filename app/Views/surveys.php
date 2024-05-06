@@ -166,7 +166,10 @@
         const surveys = paginatedSurveys['results'];
         const pagination = paginatedSurveys['pagination'];
 
-        paginationContainer.innerHTML = pagination['links'].replace(/\/api/g, '');
+        // Replace api calls with regular calls
+        const paginationLinks = pagination['links'].replace(/\/api/g, '');
+
+        paginationContainer.innerHTML = paginationLinks;
 
         // Append each survey to the table
         let surveyRows = [];

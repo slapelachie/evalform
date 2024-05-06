@@ -3,13 +3,16 @@
 
 <section class="py-3">
     <div class="container">
-        <h1 class="display-5 mb-3">Create a Survey</h1>
-        <form id="surveyForm" data-user-id="<?= $user_id ?>">
+        <h1 class="display-5 mb-3"><?= isset($survey) ? "Edit \"" . $survey['name'] . "\"" : "Create a Survey" ?></h1>
+        <form id="surveyForm" class="needs-validation" data-user-id="<?= $user_id ?>" novalidate>
             <div class="mb-3">
                 <label for="surveyTitle">
                     Title of Survey <span class="text-danger">*</span>
                 </label>
-                <input id="surveyTitle" name="survey-title" type="text" class="form-control" required>
+                <input id="surveyTitle" name="survey-title" type="text" class="form-control" value="" required>
+                <div class="invalid-feedback">
+                    Please specify a survey title.
+                </div>
             </div>
             <div id="questionsContainer">
 
@@ -19,7 +22,7 @@
             </div>
             <div class="mb-3 d-grid">
                 <div id="alert"></div>
-                <button id="saveSurveyButton" type="button" class="btn btn-primary" onclick="saveSurvey()">Save Survey</button>
+                <button type="submit" id="<?= isset($survey) ? 'edit' : 'create' ?>SurveyButton" type="button" class="btn btn-primary"><?= isset($survey) ? 'Save' : 'Create' ?> Survey</button>
             </div>
         </form>
     </div>
@@ -54,6 +57,9 @@
                     <button type="button" class="delete-question-button btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
                 </div>
                 <input type="text" class="question-title form-control" required>
+                <div class="invalid-feedback">
+                    Please specify a question title.
+                </div>
             </div>
             <div>
                 <label for="answers">
@@ -73,6 +79,9 @@
     <div class="answer-container input-group mb-2">
         <input type="text" class="form-control" placeholder="" required>
         <button type="button" class="delete-answer-button btn btn-outline-danger"><i class="bi bi-trash"></i></button>
+        <div class="invalid-feedback">
+            Please specify an answer.
+        </div>
     </div>
 </template>
 
@@ -87,11 +96,13 @@
                     <button type="button" class="delete-question-button btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
                 </div>
                 <input type="text" class="question-title form-control" required>
+                <div class="invalid-feedback">
+                    Please specify a question title.
+                </div>
             </div>
         </div>
     </div>
 </template>
-
 
 <?= view('snippets/api_scripts') ?>
 <?= view('snippets/common_scripts') ?>
@@ -103,10 +114,18 @@
 
         let answers = [];
         answerContainers.forEach(answerContainer => {
-            answers.push({
+            const answerId = answerContainer.dataset.answerId;
+
+            let answerData = {
                 'position': parseInt(answerContainer.dataset.answerNumber),
                 'answer': answerContainer.querySelector('input').value.trim(),
-            });
+            }
+
+            if (answerId !== null) {
+                answerData['id'] = answerId;
+            }
+
+            answers.push(answerData);
         });
 
         return answers;
@@ -119,15 +138,22 @@
         let questions = [];
         questionContainers.forEach(questionContainer => {
             const questionType = questionContainer.dataset.questionType;
+            const questionId = questionContainer.dataset.questionId;
 
             let answers = questionType == 'multiple_choice' ? getQuestionAnswers(questionContainer) : [];
 
-            questions.push({
+            let questionData = {
                 'question_number': parseInt(questionContainer.dataset.questionNumber),
                 'type': questionType,
                 'question': questionContainer.querySelector('input').value.trim(),
                 'answers': answers
-            });
+            }
+
+            if (questionId !== null) {
+                questionData['id'] = questionId;
+            }
+
+            questions.push(questionData);
         });
 
         return questions;
@@ -137,22 +163,28 @@
         const surveyTitle = document.getElementById("surveyTitle").value.trim();
         const userId = document.getElementById("surveyForm").dataset.userId;
 
-        return {
+        data = {
             'name': surveyTitle,
             'description': 'Lorem',
             'owner_id': userId,
             'questions': getQuestions(),
         }
+
+        return data;
     }
 
-    async function submitSurvey() {
-        const apiUrl = "<?= base_url('api') ?>"
+    async function submitSurvey(surveyId = null) {
+        const apiUrl = "<?= base_url('api') ?>/surveys"
 
         const surveyData = getSurveyData();
 
         // Submit question and answer information
         try {
-            var response = await makePostAPICall(`${apiUrl}/surveys`, surveyData)
+            if (surveyId !== null) {
+                var response = await makePutAPICall(`${apiUrl}/${surveyId}`, surveyData);
+            } else {
+                var response = await makePostAPICall(apiUrl, surveyData);
+            }
         } catch (error) {
             throw error;
         }
@@ -160,32 +192,117 @@
         return response.id;
     }
 
-    async function saveSurvey() {
+    async function createSurvey() {
         // Check validation
         const surveyForm = document.getElementById('surveyForm');
-        if (!surveyForm.checkValidity()) {
-            appendAlert('Please fill out all required fields.', 'danger');
-            return;
-        }
 
         // Disable Save Button
-        const saveSurveyButton = document.getElementById('saveSurveyButton');
-        saveSurveyButton.disabled = true;
+        const createSurveyButton = document.getElementById('createSurveyButton');
+        createSurveyButton.disabled = true;
 
         // Try submitting the survey
         try {
             var surveyId = await submitSurvey();
         } catch (error) {
-            appendAlert("Something went wrong! Please try again later.", 'danger');
-            console.error(error);
-            saveSurveyButton.disabled = false;
-            return;
+            createSurveyButton.disabled = false;
+            throw error;
         }
 
-        // Redirect to successful creation page
-        // TODO: should be from api not hardcoded!
-        window.location.href = `<?= base_url('surveys/') ?>${surveyId}/manage`;
+        return surveyId;
     }
+
+    /* Edit survey stuff */
+
+    async function editSurvey() {
+        // Check validation
+        const surveyForm = document.getElementById('surveyForm');
+        const surveyId = surveyForm.dataset.surveyId;
+
+        // Disable Save Button
+        const editSurveyButton = document.getElementById('editSurveyButton');
+        editSurveyButton.disabled = true;
+
+        // Try submitting the survey
+        try {
+            await submitSurvey(surveyId);
+        } catch (error) {
+            editSurveyButton.disabled = false;
+            throw error;
+        }
+
+        return surveyId;
+    }
+
+    function populateSurveyTitle(surveyData) {
+        const surveyTitleField = document.getElementById("surveyTitle");
+        surveyTitleField.value = surveyData ? surveyData.name ?? '' : '';
+    }
+
+    function setCommonQuestionAttributes(questionContainer, question) {
+        questionContainer.querySelector('div').dataset.questionNumber = question['question_number'];
+        questionContainer.querySelector('div').dataset.questionId = question['id'];
+        questionContainer.querySelector('.question-title').value = question['question'];
+    }
+
+    function populateMultipleChoiceQuestion(question) {
+        const questionTemplate = document.getElementById("multipleChoiceQuestionTemplate");
+        const questionContainer = questionTemplate.content.cloneNode(true);
+
+        setCommonQuestionAttributes(questionContainer, question);
+
+        const answersContainer = questionContainer.querySelector('.answers-container');
+
+        for (const answer of question['answers']) {
+            const answerTemplate = document.getElementById('answerTemplate');
+            const answerContainer = answerTemplate.content.cloneNode(true);
+            console.log(answer);
+
+            answerContainer.querySelector('div').dataset.answerNumber = answer['position'];
+            answerContainer.querySelector('div').dataset.answerId = answer['id'];
+            answerContainer.querySelector('input').value = answer['answer'];
+
+            answersContainer.appendChild(answerContainer);
+        }
+
+        return questionContainer;
+    }
+
+    function populateFreeTextQuestion(question) {
+        const questionTemplate = document.getElementById("freeTextQuestionTemplate");
+        const questionContainer = questionTemplate.content.cloneNode(true);
+
+        setCommonQuestionAttributes(questionContainer, question);
+
+        return questionContainer;
+    }
+
+    function populateSurveyQuestions(questions) {
+        const questionsContainer = document.getElementById('questionsContainer');
+
+        for (const question of questions) {
+            if (question['type'] == "multiple_choice") {
+                questionContainer = populateMultipleChoiceQuestion(question);
+                questionsContainer.appendChild(questionContainer);
+            } else if (question['type'] == "free_text") {
+                questionContainer = populateFreeTextQuestion(question);
+                questionsContainer.appendChild(questionContainer);
+            }
+        }
+    }
+
+    function populateSurveyFields() {
+        const surveyForm = document.getElementById("surveyForm");
+
+        const surveyData = <?= json_encode($survey) ?>;
+        const questions = <?= json_encode($questions) ?>;
+
+        surveyForm.dataset.surveyId = surveyData['id'];
+
+        populateSurveyTitle(surveyData);
+        populateSurveyQuestions(questions);
+    }
+
+    /* End edit survey stuff */
 
     function newQuestionButton(templateName) {
         const questionsContainer = document.getElementById('questionsContainer');
@@ -202,12 +319,51 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        const surveyForm = document.getElementById("surveyForm");
         const questionsContainer = document.getElementById('questionsContainer');
         const addMultipleChoiceQuestionButton = document.getElementById('addMultipleChoiceQuestionButton');
         const addFreeTextQuestionButton = document.getElementById('addFreeTextQuestionButton');
 
+        const createSurveyButton = document.getElementById("createSurveyButton");
+        const editSurveyButton = document.getElementById("editSurveyButton");
+
         addMultipleChoiceQuestionButton.addEventListener('click', () => newQuestionButton('multipleChoiceQuestionTemplate'));
         addFreeTextQuestionButton.addEventListener('click', () => newQuestionButton('freeTextQuestionTemplate'));
+
+        // Check if in edit mode
+        if (<?= json_encode(isset($survey)) ?>) {
+            populateSurveyFields();
+        }
+
+        document.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formValidity = surveyForm.checkValidity();
+
+            if (!formValidity) {
+                event.stopPropagation();
+            }
+
+            surveyForm.classList.add('was-validated');
+
+            if (!formValidity) {
+                return;
+            }
+
+            try {
+                if (createSurveyButton !== null) {
+                    var surveyId = await createSurvey();
+                } else if (editSurveyButton !== null) {
+                    var surveyId = await editSurvey();
+                }
+            } catch (error) {
+                appendAlert("Something went wrong! Please try again later.", 'danger');
+                console.error(error);
+                return;
+            }
+
+            window.location.href = `<?= base_url('surveys/') ?>${surveyId}/manage`;
+        });
 
         document.addEventListener('click', function(event) {
             if (event.target.classList.contains('delete-question-button')) {
@@ -250,7 +406,6 @@
                     answer.dataset.answerNumber = ++newAnswerNumber;
                     answer.querySelector('input').placeholder = `Answer ${newAnswerNumber}`;
                 });
-
             }
         });
     });
