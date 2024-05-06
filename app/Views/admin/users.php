@@ -5,7 +5,6 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h1>User Management</h1>
     <div>
-        <!-- TODO: Add ability to add new user -->
         <a class="btn btn-outline-primary" href="<?= base_url('admin/users/create') ?>">New User</a>
         <button class="btn btn-outline-primary" type="button" onclick="refreshUsers()">Refresh</button>
     </div>
@@ -54,7 +53,7 @@
         <td class="status"></td>
         <td class="is-admin"></td>
         <td class="user-actions text-end">
-            <a class="manage-button btn btn-primary btn-sm" href="#">Manage</a>
+            <a class="manage-button btn btn-primary btn-sm" href="#">Edit</a>
             <button type="button" class="status-toggle-button btn btn-warning btn-sm">Deactivate</button>
             <button class="delete-button btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteUserModal">Delete</button>
         </td>
@@ -188,8 +187,18 @@
     }
 
     async function deleteUser(userId) {
-        // TODO: implement
-        console.log(`Deleting user with id: ${userId}`)
+        const apiUrl = `<?= base_url('api/users') ?>/${userId}`;
+        const deleteButton = document.getElementById("confirmUserDeleteButton");
+
+        try {
+            await makeDeleteAPICall(apiUrl);
+        } catch (error) {
+            appendAlert("Failed to delete the user! Please try again later.");
+            console.error(error);
+            return;
+        }
+
+        await refreshUsers();
     }
 
     document.addEventListener('DOMContentLoaded', async function() {

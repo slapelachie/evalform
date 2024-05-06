@@ -123,6 +123,17 @@ class UsersController extends ResourceController
      */
     public function delete($id = null)
     {
-        //
+        $users = auth()->getProvider();
+
+        $user = $users->findById($id);
+        if ($user == null) {
+            return $this->failNotFound('User not found with id: ' . $id);
+        }
+
+        if ($users->delete($user->id, true)) {
+            return $this->respondDeleted($user);
+        }
+
+        return $this->failServerError('Could not delete the user.');
     }
 }
