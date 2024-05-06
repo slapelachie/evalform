@@ -92,29 +92,11 @@
     </div>
 </template>
 
+
+<?= view('snippets/api_scripts') ?>
+<?= view('snippets/common_scripts') ?>
+
 <script>
-    async function submitAPICall(apiUrl, data) {
-        try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            if (!response.ok) {
-                const errorResponse = await response.json();
-                console.error(`API request failed with status ${response.status}: ${response.statusText}\n`, errorResponse);
-                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            throw error;
-        }
-    }
-
     function getQuestionAnswers(questionContainer) {
         const answersContainer = questionContainer.querySelector('.answers-container');
         const answerContainers = answersContainer.querySelectorAll('.answer-container');
@@ -170,7 +152,7 @@
 
         // Submit question and answer information
         try {
-            var response = await submitAPICall(`${apiUrl}/surveys`, surveyData)
+            var response = await makePostAPICall(`${apiUrl}/surveys`, surveyData)
         } catch (error) {
             throw error;
         }

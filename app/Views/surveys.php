@@ -65,22 +65,15 @@
     </tr>
 </template>
 
+<?= view('snippets/common_scripts') ?>
+<?= view('snippets/api_scripts') ?>
+
 <script>
     async function deleteSurvey(surveyId) {
+        const apiUrl = `<?= base_url('/api/surveys/') ?>${surveyId}`;
+
         try {
-            const response = await fetch(`<?= base_url('/api/surveys/') ?>${surveyId}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-            }
-
-            try {
-                await response.json();
-            } catch (error) {
-                throw error;
-            }
+            await makeDeleteAPICall(apiUrl);
         } catch (error) {
             appendAlert("Failed to delete the survey! Please try again later.", "danger");
             console.error(error);
@@ -91,24 +84,6 @@
         return;
     }
 
-    async function makeAPICall(apiUrl) {
-        try {
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-            });
-
-            if (!response.ok) {
-                const errorResponse = await response.json();
-                console.error(`API request failed with status ${response.status}: ${response.statusText}\n`, errorResponse);
-                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            throw error;
-        }
-    }
-
     async function getSurveys(surveyStatus = null) {
         apiUrl = `<?= base_url('/api/surveys?owner_id=') . auth()->user()->id ?>`;
 
@@ -117,7 +92,7 @@
         }
 
         try {
-            return await makeAPICall(apiUrl)
+            return await makeGetAPICall(apiUrl)
         } catch (error) {
             throw error;
         }
@@ -127,7 +102,7 @@
         apiUrl = `<?= base_url('/api/responses') ?>?survey_id=${surveyId}&count`;
 
         try {
-            var responses = await makeAPICall(apiUrl);
+            var responses = await makeGetAPICall(apiUrl);
         } catch (error) {
             throw error;
         }

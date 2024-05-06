@@ -5,7 +5,8 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h1>User Management</h1>
     <div>
-        <button class="btn btn-outline-primary" type="button" onclick="newUser()">New User</button>
+        <!-- TODO: Add ability to add new user -->
+        <a class="btn btn-outline-primary" href="<?= base_url('admin/users/create') ?>">New User</a>
         <button class="btn btn-outline-primary" type="button" onclick="refreshUsers()">Refresh</button>
     </div>
 </div>
@@ -60,30 +61,15 @@
     </tr>
 </template>
 
+<?= view('snippets/common_scripts') ?>
+<?= view('snippets/api_scripts') ?>
+
 <script>
-    async function makeAPIGetCall(apiUrl) {
-        try {
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-            });
-
-            if (!response.ok) {
-                const errorResponse = await response.json();
-                console.error(`API request failed with status ${response.status}: ${response.statusText}\n`, errorResponse);
-                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            throw error;
-        }
-    }
-
     async function getUsers() {
         apiUrl = `<?= base_url('/api/users') ?>`;
 
         try {
-            return await makeAPIGetCall(apiUrl)
+            return await makeGetAPICall(apiUrl)
         } catch (error) {
             throw error;
         }
@@ -192,27 +178,8 @@
             'active': !status
         }
 
-        console.log(userId, status, data)
-
-        try {
-            const response = await fetch(`<?= base_url('api/users') ?>/${userId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            if (!response.ok) {
-                const errorResponse = await response.json();
-                console.error(`API request failed with status ${response.status}: ${response.statusText}\n`, errorResponse);
-                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            throw error;
-        }
+        const apiUrl = `<?= base_url('api/users') ?>/${userId}`;
+        return await makePutAPICall(apiUrl, data);
     }
 
     async function deleteUser(userId) {

@@ -148,6 +148,9 @@
     </table>
 </template>
 
+<?= view('snippets/common_scripts') ?>
+<?= view('snippets/api_scripts') ?>
+
 <script>
     function resetFilters() {
         // Reset date inputs
@@ -166,17 +169,7 @@
         }
 
         try {
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-            });
-
-            if (!response.ok) {
-                const errorResponse = await response.json();
-                console.error(`API request failed with status ${response.status}: ${response.statusText}\n`, errorResponse);
-                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-            }
-
-            return await response.json();
+            return await makeGetAPICall(apiUrl);
         } catch (error) {
             throw error;
         }
@@ -192,23 +185,8 @@
                 "status": "published",
             }
 
-            const response = await fetch('<?= base_url('/api/surveys/') . $survey['id'] ?>', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(surveyData),
-            });
-
-            if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-            }
-
-            try {
-                await response.json();
-            } catch (error) {
-                throw error;
-            }
+            const apiUrl = '<?= base_url('/api/surveys/') . $survey['id'] ?>';
+            await makePutAPICall(apiUrl, surveyData);
         } catch (error) {
             appendAlert("Failed to publish this survey! Please try again later.", "danger");
             console.error(error);
@@ -221,20 +199,9 @@
     }
 
     async function deleteSurvey() {
+        const apiUrl = '<?= base_url('/api/surveys/') . $survey['id'] ?>';
         try {
-            const response = await fetch('<?= base_url('/api/surveys/') . $survey['id'] ?>', {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-            }
-
-            try {
-                await response.json();
-            } catch (error) {
-                throw error;
-            }
+            await makeDeleteAPICall(apiUrl);
         } catch (error) {
             appendAlert("Failed to delete this survey! Please try again later.", "danger");
             console.error(error);
@@ -248,17 +215,7 @@
 
     async function getAnswers(questionId) {
         try {
-            const response = await fetch(`<?= base_url('/api/answers?question_id=') ?>${questionId}`, {
-                method: 'GET',
-            });
-
-            if (!response.ok) {
-                const errorResponse = await response.json();
-                console.error(`API request failed with status ${response.status}: ${response.statusText}\n`, errorResponse);
-                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-            }
-
-            return await response.json();
+            return await makeGetAPICall(`<?= base_url('/api/answers?question_id=') ?>${questionId}`);
         } catch (error) {
             throw error;
         }
@@ -285,17 +242,7 @@
         }
 
         try {
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-            });
-
-            if (!response.ok) {
-                const errorResponse = await response.json();
-                console.error(`API request failed with status ${response.status}: ${response.statusText}\n`, errorResponse);
-                throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-            }
-
-            const data = await response.json();
+            const data = await makeGetAPICall(apiUrl);
             return data.count;
         } catch (error) {
             throw error;
