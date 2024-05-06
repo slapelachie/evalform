@@ -19,6 +19,22 @@ class AdminController extends BaseController
 
     public function createUser()
     {
-        return view('admin/user_create');
+        $data['formTitle'] = "Create a New User";
+        return view('admin/user_form', $data);
+    }
+
+    public function editUser($userId)
+    {
+        $users = auth()->getProvider();
+        $user = $users->findById($userId);
+        if ($user === null) {
+            // Return 404;
+            return;
+        }
+        $user->admin = $user->can('admin.access');
+
+        $data['formTitle']  = "Edit " . $user->username;
+        $data['user'] = $user;
+        return view('admin/user_form', $data);
     }
 }

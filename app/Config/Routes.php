@@ -26,6 +26,7 @@ $routes->group('admin', ['filter' => ['session', 'admin']], function ($routes) {
     $routes->get('/', 'AdminController::index');
     $routes->get('users', 'AdminController::users');
     $routes->get('users/create', 'AdminController::createUser');
+    $routes->get('users/(:num)', 'AdminController::editUser/$1');
 });
 
 /* API Routes */

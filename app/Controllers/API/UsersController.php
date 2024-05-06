@@ -99,6 +99,7 @@ class UsersController extends ResourceController
      */
     public function update($id = null)
     {
+        log_message('debug', "Updating user!");
         $users = auth()->getProvider();
         $user = $users->findById($id);
         if ($user == null) {
@@ -107,11 +108,28 @@ class UsersController extends ResourceController
 
         $data = $this->request->getJSON(true);
 
-        if ($users->update($id, $data)) {
-            $updatedUser = $users->findById($id);
-            return $this->respondUpdated($updatedUser);
+        if (!$users->update($id, $data)) {
+            return $this->failServerError('Could not update the user');
         }
-        return $this->failServerError('Could not update the user');
+
+        // Get the new user
+        $updatedUser = $users->findById($id);
+
+        // Set the correct group for the new user
+        if (isset($data['admin'])) {
+            if ($data['admin']) {
+                $updatedUser->addGroup('superadmin');
+            } else {
+                $updatedUser->removeGroup('superadmin');
+            }
+        }
+
+        // Handle if the password should be reset
+        if (isset($data['reset_password']) && $data['reset_password']) {
+            $updatedUser->forcePasswordReset();
+        }
+
+        return $this->respondUpdated($updatedUser);
     }
 
     /**
