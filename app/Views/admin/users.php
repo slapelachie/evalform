@@ -64,8 +64,14 @@
 <?= view('snippets/api_scripts') ?>
 
 <script>
+    /**
+     * Fetches a list of users from the API endpoint
+     * 
+     * @returns {Promise<Object[]>} List of users
+     * @throws Will re-throw any errors encountered during the API call
+    */
     async function getUsers() {
-        apiUrl = `<?= base_url('/api/users') ?>`;
+        const apiUrl = `<?= base_url('/api/users') ?>`;
 
         try {
             return await makeGetAPICall(apiUrl)
@@ -74,71 +80,86 @@
         }
     }
 
-    // Generated using ChatGPT4
+    /**
+     * Generates a human-readable "time ago" string based on a timestamp
+     * 
+     * Source: ChatGPT4
+     * 
+     * @param {string} timestamp - Timestamp in the format expected by `Date`
+     * @returns {string} Readable "time ago" string
+     */
     function generateTimeAgo(timestamp) {
         const now = new Date();
         const then = new Date(timestamp + 'Z');
         const seconds = Math.floor((now - then) / 1000);
-        let interval = Math.floor(seconds / 31536000);
 
-        if (interval > 1) {
-            return interval + " years ago";
+        // Helper function to calculate the appropriate interval
+        function calculateInterval(value, label) { 
+            const interval = Math.floor(seconds / value);
+            return interval >= 1 ? `${interval} ${label} ago` : null;
         }
-        interval = Math.floor(seconds / 2592000);
-        if (interval > 1) {
-            return interval + " months ago";
+
+        const intervals = [
+            { value: 31536000, label: 'years' },
+            { value: 2592000, label: 'months' },
+            { value: 86400, label: 'days' },
+            { value: 3600, label: 'hours' },
+            { value: 60, label: 'minutes' }
+        ];
+
+        // Iterate through intervals to determine the most appropriate "time ago"
+        for (const { value, label } of intervals) {
+            const result = calculateInterval(value, label);
+            if (result) return result;
         }
-        interval = Math.floor(seconds / 86400);
-        if (interval > 1) {
-            return interval + " days ago";
-        }
-        interval = Math.floor(seconds / 3600);
-        if (interval > 1) {
-            return interval + " hours ago";
-        }
-        interval = Math.floor(seconds / 60);
-        if (interval > 1) {
-            return interval + " minutes ago";
-        }
-        if (seconds > 30) {
-            return Math.floor(seconds) + " seconds ago";
-        }
-        return "Moments ago";
+
+        return seconds > 30 ? `${Math.floor(seconds)} seconds ago` : 'Moments ago';
     }
 
+    /**
+     * Generates a table row for a user
+     * 
+     * @param {Object} user - User object containing user data
+     * @returns {HTMLTableRowElement} Populated table row for the user
+     */
     function generateUserRow(user) {
         const template = document.getElementById("userRowTemplate");
         const newUserRow = template.content.cloneNode(true).querySelector('tr');
 
+        // Extract target elements in the new row to populate
         const usernameElement = newUserRow.querySelector('.username')
         const lastActiveElement = newUserRow.querySelector('.last-active')
         const statusElement = newUserRow.querySelector('.status')
         const adminElement = newUserRow.querySelector('.is-admin')
+
         const manageButton = newUserRow.querySelector('.manage-button');
         const statusToggleButton = newUserRow.querySelector('.status-toggle-button');
         const deleteButton = newUserRow.querySelector('.delete-button');
 
+        // Attach user data attributes to the row for later use
         newUserRow.dataset.userId = user['id'];
         newUserRow.dataset.username = user['username'];
         newUserRow.dataset.status = true;
 
+        // If user is disabled, update UI accordingly
         if (!user["active"]) {
             usernameElement.classList.add("text-muted")
             lastActiveElement.classList.add("text-muted")
             statusElement.classList.add("text-muted")
             adminElement.classList.add("text-muted")
 
-            statusToggleButton.classList.remove("btn-warning");
-            statusToggleButton.classList.add("btn-primary");
+            statusToggleButton.classList.replace("btn-warning", "btn-primary");
             statusToggleButton.textContent = "Enable";
 
             newUserRow.dataset.status = false;
         }
 
+        // Set user-specific information in the new row
         usernameElement.textContent = user['username'];
         statusElement.textContent = user["active"] ? "Enabled" : "Disabled";
         adminElement.textContent = user["admin"] ? "Yes" : "No";
 
+        // Handle last active time display
         if (user['last_active'] != null) {
             lastActiveElement.textContent = generateTimeAgo(user['last_active']['date']);
         } else {
@@ -150,35 +171,46 @@
         return newUserRow;
     }
 
+    /**
+     * Populates the user table by fetching user data and adding each user row
+     */
     async function presentUsers() {
         const userTable = document.getElementById("userTable");
         const userTableBody = userTable.querySelector("tbody");
 
         try {
-            var users = await getUsers();
+            const users = await getUsers();
         } catch (error) {
             appendAlert("Something went wrong! Please try again later.", 'danger');
             console.error(error);
             return;
         }
 
-        for (const user of users) {
-            const userRow = generateUserRow(user);
-            userTableBody.appendChild(userRow);
-        }
+        users.forEach(user => userTableBody.appendChild(generateUserRow(user)));
     }
 
+    /**
+     * Refreshes the user table by clearing and re-populating it
+     */
     async function refreshUsers() {
         const userTable = document.getElementById("userTable");
         const userTableBody = userTable.querySelector("tbody");
 
+        // Clear the table body
         userTableBody.innerHTML = '';
 
         await presentUsers();
     }
 
+    /**
+     * Toggles a user's status (active/inactive)
+     * 
+     * @param {string} userId - The ID of the user to toggle status for
+     * @param {boolean} status - The current status to toggle from
+     * @returns {Promise<Object>} Updated user data
+     */
     async function toggleUserStatus(userId, status) {
-        data = {
+        const data = {
             'active': !status
         }
 
@@ -186,6 +218,12 @@
         return await makePutAPICall(apiUrl, data);
     }
 
+    /**
+     * Deletes a user by ID via an API call
+     * 
+     * @param {string} userId - The ID of the user to delete
+     * @returns {Promise<void>}
+     */
     async function deleteUser(userId) {
         const apiUrl = `<?= base_url('api/users') ?>/${userId}`;
         const deleteButton = document.getElementById("confirmUserDeleteButton");
@@ -204,7 +242,6 @@
     document.addEventListener('DOMContentLoaded', async function() {
         // Get the query params
         const urlParams = new URLSearchParams(window.location.search);
-        // const status = urlParams.get('page'); // Will be useful for pagination?
 
         // Display users list
         await presentUsers();
@@ -212,15 +249,17 @@
         document.addEventListener('click', async function(event) {
             const target = event.target;
             if (target.classList.contains('status-toggle-button')) {
+                // Handle status toggle button clicks
                 const statusToggleButton = target;
                 const closestUserRow = statusToggleButton.closest('.user-row');
                 const userId = closestUserRow.dataset.userId;
                 const status = closestUserRow.dataset.status === "true";
 
+                // Disable the button to prevent duplicate clicks
                 statusToggleButton.disabled = true;
 
                 try {
-                    var updatedUser = await toggleUserStatus(userId, status)
+                    await toggleUserStatus(userId, status);
                 } catch (error) {
                     appendAlert("Failed to change the status of the user! Please try again later.", "danger")
                     console.error(error);
@@ -232,6 +271,7 @@
             } else if (target.classList.contains('delete-button')) {
                 const closestUserRow = target.closest('.user-row');
 
+                // Set up modal dialog for confirming deletion
                 const deleteModalLabel = document.getElementById("deleteUserLabel");
                 const deleteModal = document.getElementById("deleteUserModal");
                 const deleteButton = document.getElementById("confirmUserDeleteButton");
