@@ -2,8 +2,18 @@
 
 namespace App\Controllers;
 
+/**
+ * Class DashboardController
+ *
+ * Handles data aggregation and insights for the user dashboard
+ */
 class DashboardController extends BaseController
 {
+    /**
+     * Display the dashboard view with insights on surveys.
+     *
+     * @return string Rendered dashboard view
+     */
     public function index(): string
     {
         $surveyModel = new \App\Models\SurveysModel();
@@ -11,14 +21,15 @@ class DashboardController extends BaseController
 
         $userId = auth()->user()->id;
 
-        // Get list of surveys
+        // Retrieve all surveys owned by the current user
         $data['surveys'] = $surveyModel->where('owner_id', $userId)->findAll();
 
-        // Get insights
+        // Initialise insight counts
         $publishCount = 0;
         $draftCount = 0;
         $surveyResponseCount = 0;
 
+        // Iterate over surveys to compute insights based on status and responses
         foreach ($data['surveys'] as $survey) {
             if ($survey['status'] == 'published') {
                 $publishCount++;
@@ -26,10 +37,12 @@ class DashboardController extends BaseController
                 $draftCount++;
             }
 
-            $surveyResponseCount += count($surveyResponsesModel->where('survey_id', $survey['id'])->findAll());
+            $surveyResponseCount += $surveyResponsesModel
+                ->where('survey_id', $survey['id'])
+                ->countAllResults();
         }
 
-        // TODO: See if there is a good alternative to survey views
+        // Prepare aggregated insights for the dashboard
         $data['insights'] = [
             'publishes' => [
                 'name' => 'Published Surveys',
