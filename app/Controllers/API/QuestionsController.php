@@ -143,7 +143,7 @@ class QuestionsController extends ResourceController
 
         // Check if the current user has the necessary permissions to update this question
         if (!$this->checkPermissions($question['survey_id'])) {
-            return $this->failUnauthorized(self::MSG_UNAUTHORISED_UPDATE);
+            return $this->failForbidden(self::MSG_UNAUTHORISED_UPDATE);
         }
 
         $data = $this->request->getJSON(true);
