@@ -179,7 +179,7 @@
         const userTableBody = userTable.querySelector("tbody");
 
         try {
-            const users = await getUsers();
+            var users = await getUsers();
         } catch (error) {
             appendAlert("Something went wrong! Please try again later.", 'danger');
             console.error(error);

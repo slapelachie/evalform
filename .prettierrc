@@ -1,5 +1,4 @@
 {
-    "parser": "php",
     "plugins": ["@prettier/plugin-php"],
     "trailingComma": "all",
     "tabWidth": 4,
