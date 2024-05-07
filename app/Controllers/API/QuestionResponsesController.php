@@ -2,10 +2,10 @@
 
 namespace App\Controllers\API;
 
+use App\Models\SurveysModel;
+use App\Models\SurveyResponsesModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
-use App\Models\SurveyResponsesModel;
-use App\Models\SurveysModel;
 
 /**
  * Class QuestionResponsesController
@@ -14,6 +14,17 @@ use App\Models\SurveysModel;
  */
 class QuestionResponsesController extends ResourceController
 {
+    protected const MSG_VALIDATION_ERROR = 'Invalid input. Please check the data and try again.';
+    protected const MSG_SERVER_ERROR = 'An unexpected error occurred. Please try again later.';
+
+    protected const MSG_NOT_FOUND = 'The requested question response could not be found.';
+    protected const MSG_CREATED = 'The question response has been successfully created.';
+    protected const MSG_UPDATED = 'The question response has been successfully updated.';
+    protected const MSG_DELETED = 'The question response has been successfully deleted.';
+    protected const MSG_UNAUTHORISED_ACCESS = 'You are not authorised to access this question response.';
+    protected const MSG_UNAUTHORISED_UPDATE = 'You are not authorised to update this question response.';
+    protected const MSG_UNAUTHORISED_DELETE = 'You are not authorised to delete this question response.';
+
     /** @var string $modelName The model associated with this controller */
     protected $modelName = 'App\Models\QuestionResponsesModel';
 
@@ -138,12 +149,12 @@ class QuestionResponsesController extends ResourceController
 
         // If the response does not exist
         if ($response === null) {
-            return $this->failNotFound('Question response not found with id: ' . $id);
+            return $this->failNotFound(self::MSG_NOT_FOUND);
         }
 
         // Verify that the current user has permissions to access this response
         if (!$this->checkPermissions($response['id'])) {
-            return $this->failForbidden('You do not have access to this question response.');
+            return $this->failForbidden(self::MSG_UNAUTHORISED_ACCESS);
         }
 
         return $this->respond($response);
@@ -161,7 +172,7 @@ class QuestionResponsesController extends ResourceController
 
         // Ensure valid json data is provided
         if ($data === null) {
-            return $this->failValidationErrors('Invalid JSON.');
+            return $this->failValidationErrors(self::MSG_VALIDATION_ERROR);
         }
 
         // Attempt to insert the data into the database
@@ -173,7 +184,7 @@ class QuestionResponsesController extends ResourceController
         $responseId = $this->model->getInsertID();
         $response = $this->model->find($responseId);
 
-        return $this->respondCreated($response, 'Question response created successfully.');
+        return $this->respondCreated($response, self::MSG_CREATED);
     }
 
     /**
@@ -185,7 +196,7 @@ class QuestionResponsesController extends ResourceController
     public function update($id = null)
     {
         if ($id === null) {
-            return $this->failValidationErrors('ID cannot be null.');
+            return $this->failValidationErrors(self::MSG_VALIDATION_ERROR);
         }
 
         // Retrieve the existing question response by its id
@@ -193,12 +204,12 @@ class QuestionResponsesController extends ResourceController
 
         // If the response doesn't exist
         if ($response === null) {
-            return $this->failNotFound('Question response not found with id: ' . $id);
+            return $this->failNotFound(self::MSG_NOT_FOUND);
         }
 
-        // Verify that the current user has permissions to access this response
+        // Verify that the current user has permissions to update this response
         if (!$this->checkPermissions($response['id'])) {
-            return $this->failForbidden('You do not have access to this question response.');
+            return $this->failForbidden(self::MSG_UNAUTHORISED_UPDATE);
         }
 
         // Retrieve data from the request's json body
@@ -206,18 +217,15 @@ class QuestionResponsesController extends ResourceController
 
         // Ensure valid json data is provided
         if ($data === null) {
-            return $this->failValidationErrors('Invalid JSON.');
+            return $this->failValidationErrors(self::MSG_VALIDATION_ERROR);
         }
 
         // Attempt to update the existing question response
         if ($this->model->update($id, $data)) {
             $updatedResponse = $this->model->find($id);
-            return $this->respondUpdated(
-                $updatedResponse,
-                'Question response updated successfully'
-            );
+            return $this->respondUpdated($updatedResponse, self::MSG_UPDATED);
         }
-        return $this->failServerError('Could not update the question response');
+        return $this->failServerError(self::MSG_SERVER_ERROR);
     }
 
     /**
@@ -229,7 +237,7 @@ class QuestionResponsesController extends ResourceController
     public function delete($id = null)
     {
         if ($id === null) {
-            return $this->failValidationErrors('ID cannot be null.');
+            return $this->failValidationErrors(self::MSG_VALIDATION_ERROR);
         }
 
         // Retrieve the existing question response by its id
@@ -237,19 +245,19 @@ class QuestionResponsesController extends ResourceController
 
         // If the response doesn't exist
         if ($response === null) {
-            return $this->failNotFound('Question response not found with id: ' . $id);
+            return $this->failNotFound(self::MSG_NOT_FOUND);
         }
 
-        // Verify that the current user has permissions to access this response
+        // Verify that the current user has permissions to delete this response
         if (!$this->checkPermissions($response['id'])) {
-            return $this->failForbidden('You do not have access to this question response.');
+            return $this->failForbidden(self::MSG_UNAUTHORISED_DELETE);
         }
 
         // Attempt to delete the response by its id
         if ($this->model->delete($id)) {
-            return $this->respondDeleted($response, 'Question response deleted successfully');
+            return $this->respondDeleted($response, self::MSG_DELETED);
         }
 
-        return $this->failServerError('Could not delete the question response');
+        return $this->failServerError(self::MSG_SERVER_ERROR);
     }
 }
