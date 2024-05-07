@@ -98,12 +98,13 @@ class QuestionResponsesController extends ResourceController
             ->join('surveys', 'surveys.id = survey_responses.survey_id', 'inner');
 
         // Apply filters based on provided query parameters
-        if ($questionId !== null) {
-            $query = $query->where('question_responses.question_id', $questionId);
-        }
+        $filters = ['question_id' => $questionId, 'answer_id' => $answerId];
 
-        if ($answerId !== null) {
-            $query = $query->where('question_responses.answer_id', $answerId);
+        // Apply filters if present
+        foreach ($filters as $field => $value) {
+            if ($value !== null) {
+                $query = $query->where('question_responses.' . $field, $value);
+            }
         }
 
         if ($startDate !== null) {

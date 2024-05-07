@@ -68,14 +68,13 @@ class QuestionsController extends ResourceController
 
         $query = $this->model;
 
-        // If a survey id is provided, filter questions by that survey id
-        if ($surveyId !== null) {
-            $query = $query->where('survey_id', $surveyId);
-        }
+        $filters = ['survey_id' => $surveyId, 'type' => $type];
 
-        // If a question type is provided, filter questions by that type
-        if ($type !== null) {
-            $query = $query->where('type', $type);
+        // Apply filters if present
+        foreach ($filters as $field => $value) {
+            if ($value !== null) {
+                $query = $query->where($field, $value);
+            }
         }
 
         // If `count` query parameter is set, return the count of filtered questions
