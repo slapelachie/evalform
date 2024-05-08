@@ -92,7 +92,6 @@ function getSurveyData() {
  * @returns {Promise<string>} The ID of the submitted or updated survey.
  * @throws Will throw an error if the API request fails.
  */
-async;
 async function submitSurvey(apiUrl, surveyId = null) {
     const endpointUrl = `${apiUrl}/surveys`;
     const surveyData = getSurveyData();
@@ -419,4 +418,33 @@ function deleteAnswer(event) {
     closestAnswer.remove();
 
     updateAnswerNumbers(closestQuestion);
+}
+
+/**
+ * Sets up the event listeners for the survey page, including click and submit
+ */
+function setupEventListeners() {
+    const addMultipleChoiceQuestionButton = document.getElementById(
+        'addMultipleChoiceQuestionButton',
+    );
+    const addFreeTextQuestionButton = document.getElementById('addFreeTextQuestionButton');
+
+    addMultipleChoiceQuestionButton.addEventListener('click', () =>
+        newQuestionButton('multipleChoiceQuestionTemplate'),
+    );
+    addFreeTextQuestionButton.addEventListener('click', () =>
+        newQuestionButton('freeTextQuestionTemplate'),
+    );
+
+    document.addEventListener('submit', (event) => handleFormSubmission(event, apiUrl));
+
+    document.addEventListener('click', function (event) {
+        if (event.target.classList.contains('delete-question-button')) {
+            deleteQuestion(event);
+        } else if (event.target.classList.contains('add-answer-button')) {
+            addAnswer(event);
+        } else if (event.target.classList.contains('delete-answer-button')) {
+            deleteAnswer(event);
+        }
+    });
 }

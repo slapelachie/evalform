@@ -120,11 +120,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const apiUrl = "<?= base_url('api/') ?>"
 
-        const addMultipleChoiceQuestionButton = document.getElementById('addMultipleChoiceQuestionButton');
-        const addFreeTextQuestionButton = document.getElementById('addFreeTextQuestionButton');
-
-        addMultipleChoiceQuestionButton.addEventListener('click', () => newQuestionButton('multipleChoiceQuestionTemplate'));
-        addFreeTextQuestionButton.addEventListener('click', () => newQuestionButton('freeTextQuestionTemplate'));
+        setupEventListeners();
 
         // Check if in edit mode
         if (<?= json_encode(isset($survey)) ?>) {
@@ -132,18 +128,6 @@
             const questions = <?= json_encode($questions) ?>;
             populateSurveyFields(surveyData, questions);
         }
-
-        document.addEventListener('submit', (event) => handleFormSubmission(event, apiUrl));
-
-        document.addEventListener('click', function(event) {
-            if (event.target.classList.contains('delete-question-button')) {
-                deleteQuestion(event);
-            } else if (event.target.classList.contains('add-answer-button')) {
-                addAnswer(event);
-            } else if (event.target.classList.contains('delete-answer-button')) {
-                deleteAnswer(event);
-            }
-        });
     });
 </script>
 
