@@ -75,8 +75,8 @@
 <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 <script src="<?= base_url('/js/survey/surveys.js') ?>"></script>
 
-<?= view('snippets/common_scripts') ?>
-<?= view('snippets/api_scripts') ?>
+<script src="<?= base_url('/js/utils.js') ?>"></script>
+<script src="<?= base_url('/js/api.js') ?>"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', async function() {

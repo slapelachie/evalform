@@ -6,22 +6,40 @@
         <h1 class="display-5 mb-3"><?= $survey['name'] ?></h1>
         <p><?= $survey['description'] ?></p>
 
-        <form id="surveyForm" class="bg-light rounded p-3" data-survey-id="<?= $survey["id"] ?>">
-            <?php foreach ($questions as $question) : ?>
-                <div class="mb-3 question-container" data-question-id="<?= $question["id"] ?>" data-question-type="<?= $question["type"] ?>">
+        <form id="surveyForm" class="bg-light rounded p-3" data-survey-id="<?= $survey['id'] ?>">
+            <?php foreach ($questions as $question): ?>
+                <div class="mb-3 question-container" data-question-id="<?= $question[
+                    'id'
+                ] ?>" data-question-type="<?= $question['type'] ?>">
                     <?php if ($question['type'] == 'multiple_choice') { ?>
-                        <p class="lead mb-2"><?= $question['question_number'] . '. ' . $question['question'] ?></p>
-                        <?php foreach ($question['choices'] as $choice) : ?>
-                            <div class="form-check mb-3 answer-container" data-answer-id="<?= $choice["id"] ?>">
-                                <label for="question-<?= $question['question_number'] . '-' . $choice['position'] ?>" class="form-check-label">
+                        <p class="lead mb-2"><?= $question['question_number'] .
+                            '. ' .
+                            $question['question'] ?></p>
+                        <?php foreach ($question['choices'] as $choice): ?>
+                            <div class="form-check mb-3 answer-container" data-answer-id="<?= $choice[
+                                'id'
+                            ] ?>">
+                                <label for="question-<?= $question['question_number'] .
+                                    '-' .
+                                    $choice['position'] ?>" class="form-check-label">
                                     <?= $choice['answer'] ?>
                                 </label>
-                                <input type="radio" class="form-check-input answer-choice" id="question-<?= $question['question_number'] . '-' . $choice['position'] ?>" value="<?= $choice['id'] ?>">
+                                <input type="radio" class="form-check-input answer-choice" id="question-<?= $question[
+                                    'question_number'
+                                ] .
+                                    '-' .
+                                    $choice['position'] ?>" value="<?= $choice['id'] ?>">
                             </div>
                         <?php endforeach; ?>
                     <?php } elseif ($question['type'] == 'free_text') { ?>
-                        <label for="question-<?= $question['question_number'] ?>" class="lead form-label"><?= $question['question_number'] . '. ' . $question['question'] ?></label>
-                        <textarea id="question-<?= $question['question_number'] ?>" rows="3" class="form-control"></textarea>
+                        <label for="question-<?= $question[
+                            'question_number'
+                        ] ?>" class="lead form-label"><?= $question['question_number'] .
+    '. ' .
+    $question['question'] ?></label>
+                        <textarea id="question-<?= $question[
+                            'question_number'
+                        ] ?>" rows="3" class="form-control"></textarea>
                     <?php } ?>
                 </div>
             <?php endforeach; ?>
@@ -33,10 +51,16 @@
     </div>
 </section>
 
-<?= view('snippets/api_scripts') ?>
-<?= view('snippets/common_scripts') ?>
+<script src="<?= base_url('/js/utils.js') ?>"></script>
+<script src="<?= base_url('/js/api.js') ?>"></script>
 
 <script>
+    /**
+     * Retrieves the selected multiple-choice answer ID from the given question container.
+     *
+     * @param {HTMLElement} questionContainer - The container element of the multiple-choice question.
+     * @returns {string|null} The ID of the selected answer, or null if no answer is selected.
+     */
     function getMultipleChoiceAnswer(questionContainer) {
         const answerContainers = questionContainer.querySelectorAll('.answer-container');
 
@@ -50,11 +74,23 @@
         return null;
     }
 
+    /**
+     * Retrieves the free-text answer from the given question container.
+     *
+     * @param {HTMLElement} questionContainer - The container element of the free-text question.
+     * @returns {string} The free-text answer.
+     */
     function getFreeTextAnswer(questionContainer) {
         const textArea = questionContainer.querySelector("textarea");
         return textArea.value;
     }
 
+    /**
+     * Retrieves responses to all questions from the survey form.
+     *
+     * @param {HTMLElement} surveyForm - The form element containing the survey questions.
+     * @returns {Array<Object>} Array of objects representing question responses.
+     */
     function getQuestionResponses(surveyForm) {
         const questionContainers = surveyForm.querySelectorAll(".question-container");
 
@@ -88,6 +124,11 @@
         }
     }
 
+    /**
+     * Retrieves survey response data including the survey ID and responses to questions.
+     *
+     * @returns {Object} Object containing survey ID and question responses.
+     */
     async function submitSurvey() {
         const apiUrl = "<?= base_url('api') ?>"
         const submitSurveyButton = document.getElementById('submitSurveyButton');

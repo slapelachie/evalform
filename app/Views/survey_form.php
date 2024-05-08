@@ -112,9 +112,8 @@
     </div>
 </template>
 
-<?= view('snippets/api_scripts') ?>
-<?= view('snippets/common_scripts') ?>
-
+<script src="<?= base_url('/js/utils.js') ?>"></script>
+<script src="<?= base_url('/js/api.js') ?>"></script>
 <script src="<?= base_url('/js/survey/survey_form.js') ?>"></script>
 
 <script>

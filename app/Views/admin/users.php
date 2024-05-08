@@ -60,8 +60,8 @@
     </tr>
 </template>
 
-<?= view('snippets/common_scripts') ?>
-<?= view('snippets/api_scripts') ?>
+<script src="<?= base_url('/js/utils.js') ?>"></script>
+<script src="<?= base_url('/js/api.js') ?>"></script>
 
 <script>
     /**
