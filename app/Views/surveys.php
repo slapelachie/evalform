@@ -5,7 +5,7 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h1>Your Surveys</h1>
-            <button class="btn btn-outline-primary" type="button" onclick="refreshSurveys()">Refresh</button>
+            <button id="refreshButton" class="btn btn-outline-primary" type="button">Refresh</button>
         </div>
         <div id="alert"></div>
         <div class="my-3">
@@ -19,7 +19,7 @@
                     </select>
                 </div>
                 <div class="col-md-auto ms-auto">
-                    <button type="button" class="btn btn-primary w-100 w-md-auto" onclick="presentSurveys()">Apply Filters</button>
+                    <button id="applyFiltersButton" type="button" class="btn btn-primary w-100 w-md-auto">Apply Filters</button>
                 </div>
             </div>
         </div>
@@ -51,7 +51,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body d-grid gap-3">
-                <button id="confirmSurveyDeleteButton" type="button" class="btn btn-outline-danger" data-bs-dismiss="modal" onclick="deleteSurvey()">Yes, delete this survey.</button>
+                <button id="confirmSurveyDeleteButton" type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Yes, delete this survey.</button>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
@@ -73,176 +73,25 @@
 </template>
 
 <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+<script src="<?= base_url('/js/survey/surveys.js') ?>"></script>
 
 <?= view('snippets/common_scripts') ?>
 <?= view('snippets/api_scripts') ?>
 
 <script>
-    async function deleteSurvey(surveyId) {
-        const apiUrl = `<?= base_url('/api/surveys/') ?>${surveyId}`;
-
-        try {
-            await makeDeleteAPICall(apiUrl);
-        } catch (error) {
-            appendAlert("Failed to delete the survey! Please try again later.", "danger");
-            console.error(error);
-            return;
-        }
-
-        presentSurveys();
-        return;
-    }
-
-    async function getSurveys(surveyStatus = null, page = 1) {
-        apiUrl = `<?= base_url('/api/surveys?owner_id=') . auth()->user()->id ?>`;
-
-        if (surveyStatus != null) {
-            apiUrl += `&status=${surveyStatus}`;
-        }
-
-        if (page != 1) {
-            apiUrl += `&page=${page}`
-        }
-
-        try {
-            return await makeGetAPICall(apiUrl);
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async function getSurveyResponseCount(surveyId) {
-        apiUrl = `<?= base_url('/api/responses') ?>?survey_id=${surveyId}&count`;
-
-        try {
-            var responses = await makeGetAPICall(apiUrl);
-        } catch (error) {
-            throw error;
-        }
-
-        return responses.count;
-    }
-
-    async function generateSurveyRow(survey) {
-        const template = document.getElementById("surveyRowTemplate");
-        const newSurvey = template.content.cloneNode(true);
-
-        const surveyResponseCount = await getSurveyResponseCount(survey["id"]);
-        newSurvey.querySelector(".survey-name").textContent = survey['name'];
-        newSurvey.querySelector(".survey-responses").textContent = surveyResponseCount;
-        newSurvey.querySelector(".manage-button").href = `<?= base_url('surveys') ?>/${survey["id"]}/manage`;
-
-        const deleteButton = newSurvey.querySelector(".delete-button");
-        deleteButton.dataset.surveyId = survey["id"];
-        deleteButton.dataset.surveyName = survey["name"];
-
-        const shareButton = newSurvey.querySelector(".share-button");
-        shareButton.dataset.surveyId = survey["id"];
-        shareButton.dataset.surveyName = survey["name"];
-
-        return newSurvey;
-    }
-
-    function getQueryParam(param) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(param);
-    }
-
-    async function presentSurveys() {
-        const surveyTable = document.getElementById("surveyTable");
-        const paginationContainer = document.getElementById("paginationContainer");
-        const loadingContainer = document.getElementById("loadingContainer");
-        const surveyTableBody = surveyTable.querySelector("tbody");
-
-        const surveyStatusFilter = document.getElementById('surveyStatusFilter')
-        const surveyStatusValue = surveyStatusFilter.value != "any" ? surveyStatusFilter.value : null;
-        const pageParam = getQueryParam('page') ?? 1;
-
-        try {
-            var paginatedSurveys = await getSurveys(surveyStatusValue, pageParam);
-        } catch (error) {
-            appendAlert("Something went wrong! Please try again later.", 'danger');
-            console.error(error);
-            return;
-        }
-
-        // Show loading element
-        loadingContainer.classList.remove('d-none');
-
-        // Clear current surveys if they are already presented
-        surveyTableBody.innerHTML = '';
-
-        const surveys = paginatedSurveys['results'];
-        const pagination = paginatedSurveys['pagination'];
-
-        // Replace api calls with regular calls
-        const paginationLinks = pagination['links'].replace(/\/api/g, '');
-
-        paginationContainer.innerHTML = paginationLinks;
-
-        // Append each survey to the table
-        let surveyRows = [];
-        for (const survey of surveys) {
-            surveyRows.push(await generateSurveyRow(survey));
-        }
-
-        loadingContainer.classList.add("d-none");
-
-        for (const surveyRow of surveyRows) {
-            surveyTableBody.append(surveyRow);
-        }
-    }
-
-    async function refreshSurveys() {
-        // function exists in case I want to change this
-        await presentSurveys();
-    }
-
     document.addEventListener('DOMContentLoaded', async function() {
-        // Get the query params
-        const urlParams = new URLSearchParams(window.location.search);
-        const status = urlParams.get('status');
+        const rootUrl = '<?= base_url('/') ?>';
+        const userId = '<?= auth()->user()->id ?>';
+        let apiUrl = `${rootUrl}/api`
 
-        // Apply any filters
-        if (status) {
-            const surveyStatusFilter = document.getElementById("surveyStatusFilter");
-            surveyStatusFilter.value = status;
-        }
+        initialiseEventHandlers(apiUrl, rootUrl, userId);
+
+        applyFiltersFromQueryParams();
 
         // Display survey list
-        await presentSurveys();
+        await presentSurveys(apiUrl, rootUrl, userId);
 
-        // Setup buttons
-        const surveyTable = document.getElementById("surveyTable");
-        const deleteModal = document.getElementById("deleteSurveyModal");
-        const deleteButton = document.getElementById("confirmSurveyDeleteButton");
-        const deleteModalLabel = document.getElementById("deleteSurveyLabel");
-        const shareModalLabel = document.getElementById("shareSurveyLabel");
-
-        const qrcodeElement = document.getElementById("qrcode");
-
-        surveyTable.querySelector('tbody').addEventListener('click', function(event) {
-            const target = event.target;
-            if (target.classList.contains('delete-button')) {
-                const surveyId = target.dataset.surveyId;
-                const surveyName = target.dataset.surveyName;
-
-                deleteModalLabel.textContent = `Delete Survey "${surveyName}"`;
-                deleteButton.onclick = function() {
-                    deleteSurvey(surveyId);
-                }
-            } else if (target.classList.contains('share-button')) {
-                const surveyId = target.dataset.surveyId;
-                const surveyName = target.dataset.surveyName;
-
-                qrcodeElement.innerHTML = '';
-
-                // Setup QRCode
-                new QRCode(qrcodeElement, `<?= base_url('/surveys') ?>/${surveyId}`);
-
-                shareModalLabel.textContent = `Share Survey "${surveyName}"`;
-            }
-        });
+        setupSurveyTableButtonListeners(apiUrl, rootUrl, userId);
     });
 </script>
 
