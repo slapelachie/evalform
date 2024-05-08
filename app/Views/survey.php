@@ -53,101 +53,17 @@
 
 <script src="<?= base_url('/js/utils.js') ?>"></script>
 <script src="<?= base_url('/js/api.js') ?>"></script>
+<script src="<?= base_url('/js/survey/survey.js') ?>"></script>
 
 <script>
-    /**
-     * Retrieves the selected multiple-choice answer ID from the given question container.
-     *
-     * @param {HTMLElement} questionContainer - The container element of the multiple-choice question.
-     * @returns {string|null} The ID of the selected answer, or null if no answer is selected.
-     */
-    function getMultipleChoiceAnswer(questionContainer) {
-        const answerContainers = questionContainer.querySelectorAll('.answer-container');
+    const rootUrl = "<?= base_url('/') ?>";
 
-        for (const answerContainer of answerContainers) {
-            const radioElement = answerContainer.querySelector('.answer-choice');
-            if (radioElement.checked) {
-                return answerContainer.dataset.answerId;
-            }
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('submitSurveyButton').addEventListener('click', async function() {
+            await submitSurvey(rootUrl);
+        });
+    });
 
-        }
-        return null;
-    }
-
-    /**
-     * Retrieves the free-text answer from the given question container.
-     *
-     * @param {HTMLElement} questionContainer - The container element of the free-text question.
-     * @returns {string} The free-text answer.
-     */
-    function getFreeTextAnswer(questionContainer) {
-        const textArea = questionContainer.querySelector("textarea");
-        return textArea.value;
-    }
-
-    /**
-     * Retrieves responses to all questions from the survey form.
-     *
-     * @param {HTMLElement} surveyForm - The form element containing the survey questions.
-     * @returns {Array<Object>} Array of objects representing question responses.
-     */
-    function getQuestionResponses(surveyForm) {
-        const questionContainers = surveyForm.querySelectorAll(".question-container");
-
-        let questions = [];
-        questionContainers.forEach(questionContainer => {
-            const questionId = questionContainer.dataset.questionId;
-            const questionType = questionContainer.dataset.questionType;
-
-            if (questionType == 'multiple_choice') {
-                var answer = getMultipleChoiceAnswer(questionContainer);
-            } else {
-                var answer = getFreeTextAnswer(questionContainer);
-            }
-
-            questions.push({
-                'question_id': questionId,
-                'answer': answer
-            })
-        })
-
-        return questions;
-    }
-
-    function getSurveyResponseData() {
-        const surveyForm = document.getElementById("surveyForm");
-        const surveyId = surveyForm.dataset.surveyId;
-
-        return {
-            'survey_id': surveyId,
-            'responses': getQuestionResponses(surveyForm),
-        }
-    }
-
-    /**
-     * Retrieves survey response data including the survey ID and responses to questions.
-     *
-     * @returns {Object} Object containing survey ID and question responses.
-     */
-    async function submitSurvey() {
-        const apiUrl = "<?= base_url('api') ?>"
-        const submitSurveyButton = document.getElementById('submitSurveyButton');
-        submitSurveyButton.disabled = true;
-
-        const surveyResponseData = getSurveyResponseData();
-        console.log(surveyResponseData);
-
-        try {
-            await makePostAPICall(`${apiUrl}/responses`, surveyResponseData)
-        } catch (error) {
-            appendAlert("Something went wrong! Please try again later.", 'danger');
-            console.error(error);
-            submitSurveyButton.disabled = false;
-            return;
-        }
-
-        window.location.href = `<?= base_url('surveys/thank-you') ?>`;
-    }
 </script>
 
 <?= $this->endSection() ?>

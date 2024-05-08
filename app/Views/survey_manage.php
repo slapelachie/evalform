@@ -174,11 +174,11 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async function() {
-        const surveyContainer = document.getElementById('surveyContainer');
-        const surveyId = surveyContainer.dataset.surveyId;
-
         const rootUrl = '<?= base_url('/') ?>';
         const apiUrl = `${rootUrl}/api`;
+
+        const surveyContainer = document.getElementById('surveyContainer');
+        const surveyId = surveyContainer.dataset.surveyId;
 
         try {
             await setupAccordion(apiUrl);
@@ -186,33 +186,11 @@
             console.error('Error setting up accordion: ', error);
         }
 
-        document.getElementById("applyFiltersButton").addEventListener('click', async function () {
-            try {
-                await applyFilters(apiUrl);
-            } catch (error) {
-                console.error('Error applying filters: ', error)
-            }
-        });
-
-        document.getElementById("resetFiltersButton").addEventListener('click', async function () {
-            resetFilters();
-        });
-
-        document.getElementById("refreshCountsButton").addEventListener('click', async function () {
-            try {
-                await refreshCounts(apiUrl);
-            } catch (error) {
-                console.error('Error resetting counts: ', error);
-            }
-        });
-
-        document.getElementById("confirmSurveyPublishButton").addEventListener('click', async function () {
-            await publishSurvey(apiUrl, surveyId);
-        });
-
-        document.getElementById("confirmSurveyDeleteButton").addEventListener('click', async function () {
-            await deleteSurvey(rootUrl, apiUrl, surveyId);
-        });
+        try {
+            await setupClickListeners(rootUrl, apiUrl, surveyId);
+        } catch (error) {
+            console.error('Error setting up click listeners: ', error);
+        }
 
         // Setup QRCode
         new QRCode(document.getElementById("qrcode"), `${rootUrl}/surveys/${surveyId}`);

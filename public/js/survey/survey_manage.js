@@ -390,3 +390,37 @@ async function setupAccordion(
 
     refreshCounts(apiUrl, startDateUnix, endDateUnix);
 }
+
+async function setupClickListeners(rootUrl, apiUrl, surveyId) {
+    document.getElementById('applyFiltersButton').addEventListener('click', async function () {
+        try {
+            await applyFilters(apiUrl);
+        } catch (error) {
+            console.error('Error applying filters: ', error);
+        }
+    });
+
+    document.getElementById('resetFiltersButton').addEventListener('click', async function () {
+        resetFilters();
+    });
+
+    document.getElementById('refreshCountsButton').addEventListener('click', async function () {
+        try {
+            await refreshCounts(apiUrl);
+        } catch (error) {
+            console.error('Error resetting counts: ', error);
+        }
+    });
+
+    document
+        .getElementById('confirmSurveyPublishButton')
+        .addEventListener('click', async function () {
+            await publishSurvey(apiUrl, surveyId);
+        });
+
+    document
+        .getElementById('confirmSurveyDeleteButton')
+        .addEventListener('click', async function () {
+            await deleteSurvey(rootUrl, apiUrl, surveyId);
+        });
+}
