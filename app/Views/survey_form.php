@@ -118,9 +118,10 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const apiUrl = "<?= base_url('api/') ?>"
+        const rootUrl = "<?= base_url('/') ?>";
+        const apiUrl = `${rootUrl}/api`;
 
-        setupEventListeners();
+        setupEventListeners(rootUrl, apiUrl);
 
         // Check if in edit mode
         if (<?= json_encode(isset($survey)) ?>) {

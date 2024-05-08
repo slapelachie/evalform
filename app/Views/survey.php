@@ -45,7 +45,7 @@
             <?php endforeach; ?>
             <div class="mb-3 d-grid">
                 <div id="alert"></div>
-                <button id="submitSurveyButton" type="button" class="btn btn-primary" onclick="submitSurvey()">Submit Survey</button>
+                <button id="submitSurveyButton" type="button" class="btn btn-primary">Submit Survey</button>
             </div>
         </form>
     </div>

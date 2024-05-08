@@ -302,7 +302,7 @@ function newQuestionButton(templateName) {
  * @param {Event} event - The form submission event.
  * @param {string} apiUrl - The base URL of the API.
  */
-async function handleFormSubmission(event, apiUrl) {
+async function handleFormSubmission(event, rootUrl, apiUrl) {
     const surveyForm = document.getElementById('surveyForm');
     const createSurveyButton = document.getElementById('createSurveyButton');
     const editSurveyButton = document.getElementById('editSurveyButton');
@@ -333,7 +333,7 @@ async function handleFormSubmission(event, apiUrl) {
         return;
     }
 
-    window.location.href = `${apiUrl}/${surveyId}/manage`;
+    window.location.href = `${rootUrl}/surveys/${surveyId}/manage`;
 }
 
 /**
@@ -423,7 +423,7 @@ function deleteAnswer(event) {
 /**
  * Sets up the event listeners for the survey page, including click and submit
  */
-function setupEventListeners() {
+function setupEventListeners(rootUrl, apiUrl) {
     const addMultipleChoiceQuestionButton = document.getElementById(
         'addMultipleChoiceQuestionButton',
     );
@@ -436,7 +436,7 @@ function setupEventListeners() {
         newQuestionButton('freeTextQuestionTemplate'),
     );
 
-    document.addEventListener('submit', (event) => handleFormSubmission(event, apiUrl));
+    document.addEventListener('submit', (event) => handleFormSubmission(event, rootUrl, apiUrl));
 
     document.addEventListener('click', function (event) {
         if (event.target.classList.contains('delete-question-button')) {
