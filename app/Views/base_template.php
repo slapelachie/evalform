@@ -15,67 +15,78 @@
     <header>
         <nav class="navbar navbar-expand-lg bg-light">
             <div class="container">
-                <a href="<?= base_url(); ?>" class="navbar-brand">EvalForm</a>
+                <a href="<?= base_url() ?>" class="navbar-brand">EvalForm</a>
                 <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
-                        <?php if (auth()->loggedIn()) : ?>
+                        <?php if (auth()->loggedIn()): ?>
                             <li class="nav-item">
-                                <a href="<?= base_url(); ?>" class="nav-link <?= service('router')->getMatchedRoute()[0] == '/' ? 'active' : ''; ?>">
+                                <?php
+                                $isActive = service('router')->getMatchedRoute()[0] == '/';
+                                $activeClass = $isActive ? 'active' : '';
+                                ?>
+                                <a href="<?= base_url() ?>" class="nav-link <?= $activeClass ?>">
                                     Dashboard
                                 </a>
                             </li>
-                            <li class="nav-item vr"></li>
-                            <li class="nav-item d-flex align-items-center dropdown">
-                                <a href="#" class="nav-link dropdown-toggle d-flex align-items-center justify-content-center" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="d-flex align-items-center bi bi-person-circle"></i>
+                            <li class="nav-item vr d-none d-lg-block"></li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center py-0 py-lg-2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="d-flex align-items-center bi bi-person-circle d-none d-lg-block"></i>
+                                    <span class="ms-lg-2 d-lg-none">Account</span>
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <span class="dropdown-item">Signed in as <b><?= auth()->user()->username ?></b></span>
+                                        <span class="dropdown-item">
+                                            Signed in as <b><?= auth()->user()->username ?></b>
+                                        </span>
                                     </li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="<?= base_url("/profile") ?>">
+                                        <a class="dropdown-item" href="<?= base_url('/profile') ?>">
                                             Profile
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="<?= base_url("/user/settings") ?>">
+                                        <a class="dropdown-item" href="<?= base_url(
+                                            '/user/settings'
+                                        ) ?>">
                                             Settings
                                         </a>
                                     </li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
-                                    <?php if (auth()->user()->can('admin.access')) : ?>
+                                    <?php if (auth()->user()->can('admin.access')): ?>
                                         <li>
-                                            <a class="dropdown-item" href="<?= base_url("/admin") ?>">
+                                            <a class="dropdown-item" href="<?= base_url(
+                                                '/admin'
+                                            ) ?>">
                                                 Site Admin
                                             </a>
                                         </li>
                                         <li>
                                             <hr class="dropdown-divider">
                                         </li>
-                                    <?php endif ?>
+                                    <?php endif; ?>
                                     <li>
-                                        <a class="dropdown-item" href="<?= base_url("/logout") ?>">
+                                        <a class="dropdown-item" href="<?= base_url('/logout') ?>">
                                             Sign Out
                                         </a>
                                     </li>
                                 </ul>
                             </li>
-                        <?php else : ?>
+                        <?php else: ?>
                             <li class="nav-item">
-                                <a href="<?= base_url('/login'); ?>" class="nav-link">
+                                <a href="<?= base_url('/login') ?>" class="nav-link">
                                     Log In
                                 </a>
                             </li>
-                        <?php endif ?>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </div>
@@ -83,7 +94,7 @@
     </header>
 
     <main>
-        <?php if (session()->getFlashdata('error')) : ?>
+        <?php if (session()->getFlashdata('error')): ?>
             <div class="container">
                 <div class="my-3 alert alert-danger alert-dismissible" role="alert">
                     <div><?= session()->getFlashdata('error') ?></div>
@@ -91,7 +102,7 @@
                 </div>
 
             </div>
-        <?php endif ?>
+        <?php endif; ?>
         <?= $this->renderSection('content') ?>
     </main>
 

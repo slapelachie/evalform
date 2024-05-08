@@ -48,21 +48,19 @@ class DashboardController extends BaseController
                 'name' => 'Published Surveys',
                 'value' => $publishCount,
                 'link' => base_url('surveys?status=published'),
+                'size' => 'auto',
             ],
             'drafts' => [
                 'name' => 'Drafted Surveys',
                 'value' => $draftCount,
                 'link' => base_url('surveys?status=draft'),
-            ],
-            'views' => [
-                'name' => 'Survey Views',
-                'value' => 0,
-                'link' => null,
+                'size' => 'auto',
             ],
             'answers' => [
                 'name' => 'Survey Responses',
                 'value' => $surveyResponseCount,
                 'link' => null,
+                'size' => 12,
             ],
         ];
 
