@@ -10,7 +10,7 @@
         <div id="alert"></div>
         <div class="my-3">
             <div class="row align-items-end my-3">
-                <div class="col-md">
+                <div class="col-lg mb-2 mb-lg-0">
                     <label for="questionTypeFilter" class="form-label">Question Type:</label>
                     <select id="surveyStatusFilter" class="form-select">
                         <option value="any" selected>Any</option>
@@ -18,26 +18,41 @@
                         <option value="published">Published</option>
                     </select>
                 </div>
-                <div class="col-md-auto ms-auto">
-                    <button id="applyFiltersButton" type="button" class="btn btn-primary w-100 w-md-auto">Apply Filters</button>
+                <div class="col-lg-auto ms-auto">
+                    <button id="applyFiltersButton" type="button" class="btn btn-primary w-100 w-lg-auto">Apply Filters</button>
                 </div>
             </div>
         </div>
-        <table id="surveyTable" class="table table-striped">
+        <table id="surveyTable" class="table table-responsive table-hover table-striped" style="table-layout: fixed;">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th style="width: 10%;">Responses</th>
-                    <th class="w-25 text-end">Actions</th>
+                    <th scope="col" class="w-50">Name</th>
+                    <th scope="col" style="width: 20%;">Responses</th>
+                    <th scope="col" class="w-25 text-end">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="table-group-divider">
             </tbody>
         </table>
-        <div id="loadingContainer" class="my-5 d-flex justify-content-center align-items-center w-100" style="height: 20vw;">
-            <span class="display-5 ">Loading...</span>
+        <div
+            id="loadingContainer"
+            class="my-5 d-flex justify-content-center align-items-center w-100 flex-column flex-lg-row"
+        >
+            <div class="spinner-grow" aria-hidden="true"></div>
+            <span class="pt-3 pt-lg-0 ps-0 ps-lg-3 status display-5 ">Loading...</span>
         </div>
-        <div id="paginationContainer"></div>
+        <div class="row">
+            <div id="paginationContainer" class="col-lg"></div>
+            <div class="input-group col-lg">
+                <span class="input-group-text" id="inputGroup-sizing-sm">Results Per Page</span>
+                <select class="form-select" aria-label="Results per page">
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select> 
+            </div>
+        </div>
     </div>
 </section>
 
@@ -62,12 +77,13 @@
 
 <template id="surveyRowTemplate">
     <tr>
-        <td class="survey-name"></td>
+        <td class="survey-name text-truncate"></td>
         <td class="survey-responses"></td>
         <td class="survey-actions text-end">
-            <button class="share-button btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#shareSurveyModal">Share</button>
+            <!-- Display only the manage button on smaller screen sizes -->
+            <button class="share-button btn btn-outline-primary btn-sm d-none d-lg-inline" data-bs-toggle="modal" data-bs-target="#shareSurveyModal">Share</button>
             <a class="manage-button btn btn-primary btn-sm" href="#">Manage</a>
-            <button class="delete-button btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteSurveyModal" data-survey-id="" data-survey-name="">Delete</button>
+            <button class="delete-button btn btn-danger btn-sm d-none d-lg-inline" data-bs-toggle="modal" data-bs-target="#deleteSurveyModal" data-survey-id="" data-survey-name="">Delete</button>
         </td>
     </tr>
 </template>

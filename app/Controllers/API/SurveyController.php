@@ -90,7 +90,7 @@ class SurveyController extends ResourceController
         // Pagination setup
         $pager = \Config\Services::pager();
         $page = (int) ($this->request->getGet('page') ?? 1);
-        $perPage = 20;
+        $perPage = (int) ($this->request->getGet('perPage') ?? 10);
 
         $query = $this->model;
 
