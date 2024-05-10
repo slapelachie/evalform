@@ -41,11 +41,12 @@
             <div class="spinner-grow" aria-hidden="true"></div>
             <span class="pt-3 pt-lg-0 ps-0 ps-lg-3 status display-5 ">Loading...</span>
         </div>
-        <div class="row">
+        <div class="row align-items-center">
             <div id="paginationContainer" class="col-lg"></div>
-            <div class="input-group col-lg">
-                <span class="input-group-text" id="inputGroup-sizing-sm">Results Per Page</span>
-                <select class="form-select" aria-label="Results per page">
+            <!-- hide on smaller screen sizes -->
+            <div class="input-group col-lg d-none d-lg-flex">
+                <span class="input-group-text ms-auto" id="inputGroup-sizing-sm ">Results Per Page</span>
+                <select id="resultsPerPage" class="form-select form-select-sm flex-grow-0 w-25" aria-label="Results per page">
                     <option value="10" selected>10</option>
                     <option value="25">25</option>
                     <option value="50">50</option>

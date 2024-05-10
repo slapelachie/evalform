@@ -32,7 +32,7 @@ async function deleteSurvey(apiUrl, rootUrl, surveyId, userId) {
  * @returns {Promise<Array<Object>>} A promise that resolves with an array of survey objects.
  * @throws {Error} If an error occurs while making the API call.
  */
-async function getSurveys(apiUrl, userId, surveyStatus = null, page = 1) {
+async function getSurveys(apiUrl, userId, surveyStatus = null, page = 1, perPage = 10) {
     let endPointUrl = `${apiUrl}/surveys?owner_id=${userId}`;
 
     if (surveyStatus != null) {
@@ -41,6 +41,10 @@ async function getSurveys(apiUrl, userId, surveyStatus = null, page = 1) {
 
     if (page != 1) {
         endPointUrl += `&page=${page}`;
+    }
+
+    if (perPage != 10) {
+        endPointUrl += `&perPage=${perPage}`;
     }
 
     try {
@@ -129,10 +133,17 @@ async function presentSurveys(apiUrl, rootUrl, userId) {
     // Get survey status filter value and page parameter from URL
     const surveyStatusFilter = document.getElementById('surveyStatusFilter');
     const surveyStatusValue = surveyStatusFilter.value != 'any' ? surveyStatusFilter.value : null;
+    const perPageValue = document.getElementById('resultsPerPage').value;
     const pageParam = getQueryParam('page') ?? 1;
 
     try {
-        var paginatedSurveys = await getSurveys(apiUrl, userId, surveyStatusValue, pageParam);
+        var paginatedSurveys = await getSurveys(
+            apiUrl,
+            userId,
+            surveyStatusValue,
+            pageParam,
+            perPageValue,
+        );
     } catch (error) {
         appendAlert('Something went wrong! Please try again later.', 'danger');
         console.error(error);
@@ -194,6 +205,10 @@ async function initialiseEventHandlers(apiUrl, rootUrl, userId) {
     document.getElementById('refreshButton').addEventListener('click', async function () {
         refreshSurveys(apiUrl, rootUrl, userId);
     });
+
+    document.getElementById('resultsPerPage').addEventListener('change', async function () {
+        refreshSurveys(apiUrl, rootUrl, userId);
+    });
 }
 
 /**
@@ -201,13 +216,18 @@ async function initialiseEventHandlers(apiUrl, rootUrl, userId) {
  */
 function applyFiltersFromQueryParams() {
     // Get the query params
-    const urlParams = new URLSearchParams(window.location.search);
-    const status = urlParams.get('status');
+    const status = getQueryParam('status');
+    const perPageParam = getQueryParam('perPage');
 
     // Apply any filters
     if (status) {
         const surveyStatusFilter = document.getElementById('surveyStatusFilter');
         surveyStatusFilter.value = status;
+    }
+
+    if (perPageParam) {
+        const resultsPerPage = document.getElementById('resultsPerPage');
+        resultsPerPage.value = perPageParam;
     }
 }
 

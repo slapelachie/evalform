@@ -1,7 +1,7 @@
 <?php $pager->setSurroundCount(1); ?>
 
 <nav aria-label="<?= lang('Pager.pageNavigation') ?>">
-	<ul class="pagination">
+	<ul class="pagination mb-0">
 		<?php if ($pager->hasPrevious()): ?>
 			<li class="page-item">
 				<a class="page-link" href="<?= $pager->getFirst() ?>" aria-label="<?= lang('Pager.first') ?>">
