@@ -4,7 +4,7 @@
 <section class="py-3">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <h1>Your Surveys</h1>
+            <h1 class="display-5">Your Surveys</h1>
             <button id="refreshButton" class="btn btn-outline-primary" type="button">Refresh</button>
         </div>
         <div id="alert"></div>

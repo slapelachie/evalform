@@ -2,24 +2,26 @@
 <?= $this->section('content') ?>
 
 
-<div class="d-flex justify-content-between align-items-center mb-2">
-    <h1>User Management</h1>
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
+    <h1 class="display-5">User Management</h1>
     <div>
         <a class="btn btn-outline-primary" href="<?= base_url('admin/users/create') ?>">New User</a>
-        <button class="btn btn-outline-primary" type="button" onclick="refreshUsers()">Refresh</button>
+        <button class="btn btn-outline-primary" type="button" onclick="refreshUsers()">
+            Refresh
+        </button>
     </div>
 </div>
 
-<div id="alert"></div>
+<div id="alert" class="mb-3"></div>
 
-<div id="usersContainer">
+<div id="usersContainer" class="table-responsive">
     <table id="userTable" class="table table-striped">
         <thead>
             <tr>
                 <th>Username</th>
-                <th>Last Active</th>
+                <th>Active</th>
                 <th>Status</th>
-                <th>Administrator</th>
+                <th>Admin</th>
                 <th class="text-end">Actions</th>
             </tr>
         </thead>
@@ -29,15 +31,30 @@
     </table>
 </div>
 
-<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+<div
+    class="modal fade"
+    id="deleteUserModal"
+    tabindex="-1"
+    aria-labelledby="deleteUserModalLabel"
+    aria-hidden="true"
+>
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="deleteUserLabel">Delete User</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                </button>
             </div>
             <div class="modal-body d-grid gap-3">
-                <button id="confirmUserDeleteButton" type="button" class="btn btn-outline-danger" data-bs-dismiss="modal" onclick="deleteUser()">Yes, delete this user.</button>
+                <button
+                    id="confirmUserDeleteButton"
+                    type="button"
+                    class="btn btn-outline-danger"
+                    data-bs-dismiss="modal"
+                    onclick="deleteUser()"
+                >
+                    Yes, delete this user.
+                </button>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
@@ -53,9 +70,31 @@
         <td class="status"></td>
         <td class="is-admin"></td>
         <td class="user-actions text-end">
-            <a class="manage-button btn btn-primary btn-sm" href="#">Edit</a>
-            <button type="button" class="status-toggle-button btn btn-warning btn-sm">Disable</button>
-            <button class="delete-button btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteUserModal">Delete</button>
+            <button 
+                class="btn btn-primary btn-sm dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+            >
+                Actions
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a class="manage-button dropdown-item" href="#">Edit</a>
+                </li>
+                <li>
+                    <a class="status-toggle-button dropdown-item" href="#">Disable</a>
+                </li>
+                <li>
+                    <a
+                        class="delete-button dropdown-item"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteUserModal"
+                        href="#"
+                    >
+                        Delete
+                    </a>
+                </li>
+            </ul>
         </td>
     </tr>
 </template>

@@ -6,7 +6,7 @@
         <div class="mb-3">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-2">
                 <h1 class="display-5 mb-2">Manage "<?= $survey['name'] ?>"</h1>
-                <div class="">
+                <div>
                     <button 
                         class="btn btn-primary btn-sm dropdown-toggle"
                         data-bs-toggle="dropdown"
