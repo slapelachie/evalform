@@ -73,7 +73,7 @@ class SurveyController extends BaseController
      */
     public function index()
     {
-        return view('surveys');
+        return view('surveys/index');
     }
 
     /**
@@ -87,7 +87,7 @@ class SurveyController extends BaseController
         $data['survey'] = $this->getSurveyOrThrow($surveyId);
         $data['questions'] = $this->getSurveyQuestionsWithChoices($surveyId);
 
-        return view('survey', $data);
+        return view('surveys/survey', $data);
     }
 
     /**
@@ -98,7 +98,7 @@ class SurveyController extends BaseController
     public function create()
     {
         $userId = auth()->user()->id;
-        return view('survey_form', [
+        return view('surveys/modify_form', [
             'user_id' => $userId,
             'survey' => null,
             'questions' => null,
@@ -120,7 +120,7 @@ class SurveyController extends BaseController
             return $this->response->setStatusCode(403)->setBody('Forbidden');
         }
 
-        return view('survey_manage', $data);
+        return view('surveys/manage', $data);
     }
 
     /**
@@ -141,7 +141,7 @@ class SurveyController extends BaseController
 
         $questions = $this->getSurveyQuestionsWithChoices($surveyId);
 
-        return view('survey_form', [
+        return view('surveys/modify_form', [
             'user_id' => $userId,
             'survey' => $survey ?? [],
             'questions' => $questions ?? [],
@@ -273,6 +273,6 @@ class SurveyController extends BaseController
      */
     public function thankYou()
     {
-        return view('survey_complete');
+        return view('surveys/complete');
     }
 }
