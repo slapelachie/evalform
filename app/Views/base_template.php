@@ -64,7 +64,7 @@
                                     <?php if (auth()->user()->can('admin.access')): ?>
                                         <li>
                                             <a class="dropdown-item" href="<?= base_url(
-                                                '/admin'
+                                                '/admin/users'
                                             ) ?>">
                                                 Site Admin
                                             </a>
