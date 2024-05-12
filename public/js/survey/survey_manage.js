@@ -391,6 +391,13 @@ async function setupAccordion(
     refreshCounts(apiUrl, startDateUnix, endDateUnix);
 }
 
+/**
+ * Sets up click event listeners for various buttons and handles their respective actions.
+ *
+ * @param {string} rootUrl - The root URL of the application.
+ * @param {string} apiUrl - The API URL of the application.
+ * @param {string} surveyId - The ID of the survey.
+ */
 async function setupClickListeners(rootUrl, apiUrl, surveyId) {
     document.getElementById('applyFiltersButton').addEventListener('click', async function () {
         try {
@@ -423,4 +430,37 @@ async function setupClickListeners(rootUrl, apiUrl, surveyId) {
         .addEventListener('click', async function () {
             await deleteSurvey(rootUrl, apiUrl, surveyId);
         });
+}
+
+/**
+ * Toggles the visibility of the filters container based on the screen size.
+ */
+function onFilterScreenToggle() {
+    const filtersContainer = document.getElementById('filtersContainer');
+
+    if (window.innerWidth >= 992) {
+        // Medium or larger screens, show by default
+        filtersContainer.classList.add('show');
+    } else {
+        // Small screens, collapse by default
+        filtersContainer.classList.remove('show');
+    }
+}
+
+/**
+ * Sets up the filter toggle button to expand or collapse the filters container.
+ */
+function setupFilterToggleButton() {
+    const filterToggleButton = document.getElementById('filterToggleButton');
+    window.addEventListener('resize', onFilterScreenToggle);
+
+    filterToggleButton.addEventListener('click', function () {
+        // Check if the container is currently expanded or collapsed
+        const isExpanded = filterToggleButton.classList.contains('collapsed');
+
+        // Update the button text based on the state
+        filterToggleButton.innerText = isExpanded ? 'Show filters' : 'Hide filters';
+    });
+
+    onFilterScreenToggle();
 }
