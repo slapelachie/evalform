@@ -281,11 +281,12 @@ class SurveyController extends ResourceController
         }
 
         $surveyId = $this->model->getInsertID();
+        
 
         // Insert/update questions if provided
         if (isset($data['questions'])) {
             try {
-                $this->upsertQuestions($data['questions'], $surveyId);
+                // $this->upsertQuestions($data['questions'], $surveyId);
             } catch (\Exception $error) {
                 $this->model->transRollback();
                 return $this->fail($error->getMessage());
@@ -337,7 +338,7 @@ class SurveyController extends ResourceController
         // Insert/update questions if provided
         if (isset($data['questions'])) {
             try {
-                $this->upsertQuestions($data['questions'], $id);
+                // $this->upsertQuestions($data['questions'], $id);
             } catch (\Exception $error) {
                 $this->model->transRollback();
                 return $this->failServerError(self::MSG_SERVER_ERROR);
